@@ -1,85 +1,105 @@
 package com.example.munchly
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.munchly.ui.screens.LoginScreen
-import com.example.munchly.ui.theme.MunchlyTheme
-import com.example.munchly.ui.viewmodels.UserViewModel
-import kotlinx.coroutines.launch
-import kotlin.getValue
+import com.example.munchly.ui.screens.RegisterUserTypeScreen
+import com.example.munchly.ui.screens.RegisterCredentialsScreen
+import com.example.munchly.ui.viewmodels.LoginViewModel
+import com.example.munchly.ui.viewmodels.RegisterViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            MunchlyTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    LoginScreen()
+            // Track which screen to show
+            var currentScreen by remember { mutableStateOf("login") }
+
+            // ViewModels
+            val loginViewModel: LoginViewModel = viewModel()
+            val registerViewModel: RegisterViewModel = viewModel()
+
+            when (currentScreen) {
+                "login" -> {
+                    val email by loginViewModel.email.collectAsState()
+                    val password by loginViewModel.password.collectAsState()
+
+                    LoginScreen(
+                        email = email,
+                        password = password,
+                        onEmailChange = { loginViewModel.onEmailChange(it) },
+                        onPasswordChange = { loginViewModel.onPasswordChange(it) },
+                        onSignInClick = {
+                            // For now, just show what was typed
+                            Toast.makeText(
+                                this,
+                                "Email: $email\nPassword: $password",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onGoogleSignInClick = {
+                            Toast.makeText(this, "Google sign in", Toast.LENGTH_SHORT).show()
+                        },
+                        onSignUpClick = {
+                            // Navigate to register user type screen
+                            currentScreen = "register_type"
+                        }
+                    )
                 }
-            }
-        }
-    }
-}
 
-/*
-class MainActivity : ComponentActivity() {
-    private val viewModel: UserViewModel by viewModels()
+                "register_type" -> {
+                    val selectedUserType by registerViewModel.selectedUserType.collectAsState()
 
+                    RegisterUserTypeScreen(
+                        selectedUserType = selectedUserType,
+                        onUserTypeSelected = { registerViewModel.onUserTypeSelected(it) },
+                        onContinueClick = {
+                            // Navigate to credentials screen
+                            registerViewModel.onContinueToCredentials()
+                            currentScreen = "register_credentials"
+                        },
+                        onSignInClick = {
+                            // Navigate back to login
+                            currentScreen = "login"
+                        }
+                    )
+                }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            MunchlyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                "register_credentials" -> {
+                    val username by registerViewModel.username.collectAsState()
+                    val email by registerViewModel.email.collectAsState()
+                    val password by registerViewModel.password.collectAsState()
+
+                    RegisterCredentialsScreen(
+                        username = username,
+                        email = email,
+                        password = password,
+                        onUsernameChange = { registerViewModel.onUsernameChange(it) },
+                        onEmailChange = { registerViewModel.onEmailChange(it) },
+                        onPasswordChange = { registerViewModel.onPasswordChange(it) },
+                        onSignUpClick = {
+                            // For now, just show what was typed
+                            Toast.makeText(
+                                this,
+                                "Username: $username\nEmail: $email\nPassword: $password",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onSignInClick = {
+                            // Navigate back to login
+                            currentScreen = "login"
+                        }
                     )
                 }
             }
         }
-
-        // Example usage
-        lifecycleScope.launch {
-            viewModel.loadUser("user_123")
-            viewModel.userState.collect { user ->
-                user?.let {
-                    println("Loaded user: ${it.name}")
-                }
-            }
-        }
-    }
-}
- */
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MunchlyTheme {
-        Greeting("Android")
     }
 }

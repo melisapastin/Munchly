@@ -2,6 +2,7 @@ package com.example.munchly.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +29,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    email: String,
+    password: String,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSignInClick: () -> Unit,
+    onGoogleSignInClick: () -> Unit,
+    onSignUpClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -89,8 +98,8 @@ fun LoginScreen() {
 
             // Email TextField
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = email,
+                onValueChange = onEmailChange,
                 placeholder = {
                     Text(
                         text = "your@email.com",
@@ -126,8 +135,8 @@ fun LoginScreen() {
 
             // Password TextField
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = password,
+                onValueChange = onPasswordChange,
                 placeholder = {
                     Text(
                         text = "········",
@@ -151,7 +160,7 @@ fun LoginScreen() {
 
             // Sign In Button
             Button(
-                onClick = {},
+                onClick = onSignInClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -181,7 +190,7 @@ fun LoginScreen() {
 
             // Continue with Google Button
             OutlinedButton(
-                onClick = {},
+                onClick = onGoogleSignInClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -213,7 +222,8 @@ fun LoginScreen() {
                     text = "Sign up",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFD2691E)
+                    color = Color(0xFFD2691E),
+                    modifier = Modifier.clickable { onSignUpClick() }
                 )
             }
         }
