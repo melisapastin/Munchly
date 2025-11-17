@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,25 +23,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.munchly.data.models.UserType
 import com.example.munchly.ui.components.AuthButton
-import com.example.munchly.ui.components.AuthFieldLabel
-import com.example.munchly.ui.components.AuthTextField
-import com.example.munchly.ui.viewmodels.LoginViewModel
+import com.example.munchly.ui.components.UserTypeCard
+import com.example.munchly.ui.viewmodels.RegisterViewModel
 
 @Composable
-fun LoginScreen(
+fun RegisterUserTypeScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: RegisterViewModel
 ) {
     val uiState = viewModel.uiState.value
-
-    LaunchedEffect(uiState.loginSuccess) {
-        if (uiState.loginSuccess) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -78,72 +69,81 @@ fun LoginScreen(
 
             // Tagline
             Text(
-                text = "Discover Your Next Favorite Place",
+                text = "Join Us Today",
                 fontSize = 14.sp,
                 color = Color(0xFF8B7355)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Email Section
-            AuthFieldLabel("Email")
-            Spacer(modifier = Modifier.height(8.dp))
-            AuthTextField(
-                value = uiState.email,
-                onValueChange = viewModel::onEmailChange,
-                placeholder = "your@email.com"
+            // "I am a..." Text
+            Text(
+                text = "I am a...",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF8B4513)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Password Section
-            AuthFieldLabel("Password")
             Spacer(modifier = Modifier.height(8.dp))
-            AuthTextField(
-                value = uiState.password,
-                onValueChange = viewModel::onPasswordChange,
-                placeholder = "········",
-                isPassword = true
+
+            Text(
+                text = "Select how you'll use Munchly",
+                fontSize = 14.sp,
+                color = Color(0xFF8B7355)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Sign In Button
-            if (uiState.isLoading) {
-                CircularProgressIndicator(color = Color(0xFFD2691E))
-            } else {
-                AuthButton(text = "Sign In", onClick = viewModel::signIn)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Divider
-            Text(text = "or", fontSize = 14.sp, color = Color(0xFF8B7355))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Google Sign In
-            AuthButton(
-                text = "Continue with Google",
-                onClick = { /* Handle Google sign in */ },
-                isOutlined = true
+            // Food Lover Card
+            UserTypeCard(
+                title = "Food Lover",
+                description = "Discover and bookmark restaurants",
+                isSelected = uiState.selectedUserType == UserType.FOOD_LOVER,
+                onClick = { viewModel.onUserTypeSelected(UserType.FOOD_LOVER) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sign Up Link
+            // Restaurant Owner Card
+            UserTypeCard(
+                title = "Restaurant Owner",
+                description = "List and manage your restaurant",
+                isSelected = uiState.selectedUserType == UserType.RESTAURANT_OWNER,
+                onClick = { viewModel.onUserTypeSelected(UserType.RESTAURANT_OWNER) }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Continue Button
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color(0xFFD2691E))
+            } else {
+                AuthButton(
+                    text = "Continue",
+                    onClick = {
+                        // Store the selected type and navigate
+                        viewModel.onUserTypeSelected(uiState.selectedUserType!!)
+                        navController.navigate("register_credentials")
+                    },
+                    isEnabled = uiState.selectedUserType != null
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Sign In Text
             Row {
                 Text(
-                    text = "Don't have an account? ",
+                    text = "Already have an account? ",
                     fontSize = 14.sp,
                     color = Color(0xFF8B7355)
                 )
                 Text(
-                    text = "Sign up",
+                    text = "Sign in",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFD2691E),
-                    modifier = Modifier.clickable { navController.navigate("register_type") }
+                    modifier = Modifier.clickable { navController.navigate("login") }
                 )
             }
 

@@ -15,6 +15,6 @@ class FirebaseDataSource(
     }
 
     suspend fun createUser(user: User) {
-        firestore.collection("users").document(user.id).set(user).await()
+        firestore.collection("users").document(user.uid).set(user).await()
     }
 }

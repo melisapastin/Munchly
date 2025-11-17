@@ -16,6 +16,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,19 +29,20 @@ import androidx.navigation.NavController
 import com.example.munchly.ui.components.AuthButton
 import com.example.munchly.ui.components.AuthFieldLabel
 import com.example.munchly.ui.components.AuthTextField
-import com.example.munchly.ui.viewmodels.LoginViewModel
+import com.example.munchly.ui.viewmodels.RegisterViewModel
 
 @Composable
-fun LoginScreen(
+fun RegisterCredentialsScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: RegisterViewModel
 ) {
-    val uiState = viewModel.uiState.value
+    val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.loginSuccess) {
-        if (uiState.loginSuccess) {
+    // Handle successful registration
+    LaunchedEffect(uiState.registrationSuccess) {
+        if (uiState.registrationSuccess) {
             navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+                popUpTo("register_credentials") { inclusive = true }
             }
         }
     }
@@ -78,12 +81,23 @@ fun LoginScreen(
 
             // Tagline
             Text(
-                text = "Discover Your Next Favorite Place",
+                text = "Create Your Account",
                 fontSize = 14.sp,
                 color = Color(0xFF8B7355)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            // Username Section
+            AuthFieldLabel("Username")
+            Spacer(modifier = Modifier.height(8.dp))
+            AuthTextField(
+                value = uiState.username,
+                onValueChange = viewModel::onUsernameChange,
+                placeholder = "Choose a username"
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Email Section
             AuthFieldLabel("Email")
@@ -108,42 +122,31 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Sign In Button
+            // Sign Up Button
             if (uiState.isLoading) {
                 CircularProgressIndicator(color = Color(0xFFD2691E))
             } else {
-                AuthButton(text = "Sign In", onClick = viewModel::signIn)
+                AuthButton(
+                    text = "Sign Up",
+                    onClick = viewModel::register
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Divider
-            Text(text = "or", fontSize = 14.sp, color = Color(0xFF8B7355))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Google Sign In
-            AuthButton(
-                text = "Continue with Google",
-                onClick = { /* Handle Google sign in */ },
-                isOutlined = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sign Up Link
+            // Sign In Text
             Row {
                 Text(
-                    text = "Don't have an account? ",
+                    text = "Already have an account? ",
                     fontSize = 14.sp,
                     color = Color(0xFF8B7355)
                 )
                 Text(
-                    text = "Sign up",
+                    text = "Sign in",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFD2691E),
-                    modifier = Modifier.clickable { navController.navigate("register_type") }
+                    modifier = Modifier.clickable { navController.navigate("login") }
                 )
             }
 

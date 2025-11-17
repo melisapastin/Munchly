@@ -1,58 +1,69 @@
 package com.example.munchly.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.example.munchly.ui.screens.UserType
+import androidx.lifecycle.viewModelScope
+import com.example.munchly.data.models.RegistrationData
+import com.example.munchly.data.models.UserType
+import com.example.munchly.domain.usecases.RegisterUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(
+    private val registerUseCases: RegisterUseCases = RegisterUseCases()
+) : ViewModel() {
 
-    // UI State: User type selection
-    private val _selectedUserType = MutableStateFlow<UserType?>(null)
-    val selectedUserType: StateFlow<UserType?> = _selectedUserType.asStateFlow()
+    private val _uiState = MutableStateFlow(RegisterUiState())
+    val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    // UI State: Registration step (user type selection or credentials)
-    private val _showCredentialsScreen = MutableStateFlow(false)
-    val showCredentialsScreen: StateFlow<Boolean> = _showCredentialsScreen.asStateFlow()
-
-    // UI State: User credentials
-    private val _username = MutableStateFlow("")
-    val username: StateFlow<String> = _username.asStateFlow()
-
-    private val _email = MutableStateFlow("")
-    val email: StateFlow<String> = _email.asStateFlow()
-
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password.asStateFlow()
-
-    // UI State Updates: User type selection
     fun onUserTypeSelected(userType: UserType) {
-        _selectedUserType.value = userType
+        _uiState.value = _uiState.value.copy(selectedUserType = userType)
     }
 
-    // UI State Updates: Navigation
-    fun onContinueToCredentials() {
-        _showCredentialsScreen.value = true
+    fun onUsernameChange(username: String) {
+        _uiState.value = _uiState.value.copy(username = username)
     }
 
-    fun onBackToUserTypeSelection() {
-        _showCredentialsScreen.value = false
+    fun onEmailChange(email: String) {
+        _uiState.value = _uiState.value.copy(email = email)
     }
 
-    // UI State Updates: Credentials input
-    fun onUsernameChange(newUsername: String) {
-        _username.value = newUsername
+    fun onPasswordChange(password: String) {
+        _uiState.value = _uiState.value.copy(password = password)
     }
 
-    fun onEmailChange(newEmail: String) {
-        _email.value = newEmail
+    fun register() {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+        viewModelScope.launch {
+            val registrationData = RegistrationData(
+                email = _uiState.value.email,
+                password = _uiState.value.password,
+                username = _uiState.value.username,
+                userType = _uiState.value.selectedUserType ?: UserType.FOOD_LOVER
+            )
+
+            val result = registerUseCases.registerWithEmail(registrationData)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = result.exceptionOrNull()?.message,
+                registrationSuccess = result.isSuccess
+            )
+        }
     }
 
-    fun onPasswordChange(newPassword: String) {
-        _password.value = newPassword
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
-
-    // Button clicks: Just forward to whoever is listening (MainActivity will handle)
-    // No logic here - just state management
 }
+
+data class RegisterUiState(
+    val selectedUserType: UserType? = null,
+    val username: String = "",
+    val email: String = "",
+    val password: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val registrationSuccess: Boolean = false
+)
