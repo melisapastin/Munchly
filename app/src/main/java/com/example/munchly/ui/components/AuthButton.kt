@@ -1,6 +1,5 @@
 package com.example.munchly.ui.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,29 +14,23 @@ import androidx.compose.ui.unit.sp
 fun AuthButton(
     text: String,
     onClick: () -> Unit,
-    isOutlined: Boolean = false,
+    modifier: Modifier = Modifier,
     isEnabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        colors = if (isOutlined) {
-            ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.White,
-                contentColor = Color(0xFFD2691E)
-            )
-        } else {
-            ButtonDefaults.buttonColors(containerColor = Color(0xFFD2691E))
-        },
+        modifier = modifier.height(56.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFD2691E),
+            disabledContainerColor = Color(0xFFB0A090)
+        ),
         enabled = isEnabled,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
     ) {
         Text(
             text = text,
             fontSize = 16.sp,
-            color = if (isOutlined) Color(0xFFD2691E) else Color.White
+            color = Color.White
         )
     }
 }
