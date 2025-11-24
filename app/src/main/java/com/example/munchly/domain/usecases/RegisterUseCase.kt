@@ -1,15 +1,19 @@
 package com.example.munchly.domain.usecases
 
-import com.example.munchly.data.models.RegistrationData
 import com.example.munchly.data.models.User
-import com.example.munchly.data.repository.AuthRepository
+import com.example.munchly.data.models.UserType
+import com.example.munchly.data.repository.RegisterRepository
 import javax.inject.Inject
 
-// Use case for user registration
 class RegisterUseCase @Inject constructor(
-    private val authRepository: AuthRepository
+    private val registerRepository: RegisterRepository
 ) {
-    suspend operator fun invoke(registrationData: RegistrationData): Result<User> {
-        return authRepository.registerWithEmail(registrationData)
+    suspend operator fun invoke(
+        email: String,
+        password: String,
+        username: String,
+        userType: UserType
+    ): Result<User> {
+        return registerRepository.registerUser(email, password, username, userType)
     }
 }

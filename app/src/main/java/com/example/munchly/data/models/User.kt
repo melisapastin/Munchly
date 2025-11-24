@@ -1,12 +1,13 @@
 package com.example.munchly.data.models
 
-import java.util.Date
-
 data class User(
     val uid: String,
     val email: String,
-    val userType: UserType,
-    val username: String? = null,
+    val userType: UserType, // No default - must be provided
+    val username: String,
     val name: String? = null,
-    val createdAt: Date = Date()
-)
+    val createdAt: Long = System.currentTimeMillis()
+) {
+    // No-argument constructor for Firestore with safe defaults
+    constructor() : this("", "", UserType.FOOD_LOVER, "", null, 0L)
+}

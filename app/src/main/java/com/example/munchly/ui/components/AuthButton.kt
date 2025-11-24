@@ -1,6 +1,7 @@
 package com.example.munchly.ui.components
 
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -25,7 +26,7 @@ fun AuthButton(
             disabledContainerColor = Color(0xFFB0A090)
         ),
         enabled = isEnabled,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp)
     ) {
         Text(
             text = text,
