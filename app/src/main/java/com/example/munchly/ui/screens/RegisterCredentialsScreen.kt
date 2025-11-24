@@ -61,7 +61,11 @@ fun RegisterCredentialsScreen(
     // Handle navigation on success
     LaunchedEffect(state.registrationSuccess) {
         if (state.registrationSuccess) {
-            navController.navigate("home") // Simple success navigation
+            state.user?.let { user ->
+                navController.navigate("main/${user.userType.name}/${user.username}") {
+                    popUpTo("register_user_type") { inclusive = true }
+                }
+            }
         }
     }
 

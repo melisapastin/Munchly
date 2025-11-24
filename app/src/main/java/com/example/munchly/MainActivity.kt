@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.munchly.data.models.UserType
 import com.example.munchly.ui.screens.LoginScreen
+import com.example.munchly.ui.screens.MainScreen
 import com.example.munchly.ui.screens.RegisterUserTypeScreen
 import com.example.munchly.ui.screens.RegisterCredentialsScreen
 
@@ -46,8 +47,18 @@ class MainActivity : ComponentActivity() {
                         userType = userType
                     )
                 }
-                composable("home") {
-                    Text("Welcome!")
+                composable(
+                    route = "main/{userType}/{username}",
+                    arguments = listOf(
+                        navArgument("userType") { type = NavType.StringType },
+                        navArgument("username") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
+                    val username = backStackEntry.arguments?.getString("username") ?: ""
+                    val userType = UserType.valueOf(userTypeString)
+
+                    MainScreen(userType = userType, username = username)
                 }
             }
         }

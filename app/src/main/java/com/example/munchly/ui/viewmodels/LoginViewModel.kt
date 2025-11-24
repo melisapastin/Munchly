@@ -2,6 +2,7 @@ package com.example.munchly.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.munchly.data.models.User
 import com.example.munchly.domain.usecases.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +48,12 @@ class LoginViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.isSuccess) {
-                _uiState.update { it.copy(loginSuccess = true) }
+                _uiState.update {
+                    it.copy(
+                        loginSuccess = true,
+                        user = result.getOrNull()
+                    )
+                }
             } else {
                 _uiState.update { it.copy(error = result.exceptionOrNull()?.message) }
             }
@@ -84,7 +90,8 @@ data class LoginState(
     val error: String? = null,
     val loginSuccess: Boolean = false,
     val emailError: String? = null,
-    val passwordError: String? = null
+    val passwordError: String? = null,
+    val user: User? = null
 )
 
 private data class LoginValidationResult(

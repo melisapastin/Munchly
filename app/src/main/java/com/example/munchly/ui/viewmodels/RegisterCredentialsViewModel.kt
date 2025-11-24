@@ -2,6 +2,7 @@ package com.example.munchly.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.munchly.data.models.User
 import com.example.munchly.data.models.UserType
 import com.example.munchly.domain.usecases.RegisterUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +56,12 @@ class RegisterCredentialsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.isSuccess) {
-                _uiState.update { it.copy(registrationSuccess = true) }
+                _uiState.update {
+                    it.copy(
+                        registrationSuccess = true,
+                        user = result.getOrNull()
+                    )
+                }
             } else {
                 _uiState.update { it.copy(error = result.exceptionOrNull()?.message) }
             }
@@ -103,7 +109,8 @@ data class RegisterCredentialsState(
     val registrationSuccess: Boolean = false,
     val usernameError: String? = null,
     val emailError: String? = null,
-    val passwordError: String? = null
+    val passwordError: String? = null,
+    val user: User? = null
 )
 
 private data class ValidationResult(
