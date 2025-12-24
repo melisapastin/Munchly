@@ -4,7 +4,10 @@
 
     <application
 <<<<<<< HEAD
+<<<<<<< HEAD
         android:name=".MunchlyApplication"
+=======
+>>>>>>> origin/main
 =======
 >>>>>>> origin/main
         android:allowBackup="true"
@@ -17,7 +20,11 @@
         android:theme="@style/Theme.Munchly">
         <activity
 <<<<<<< HEAD
+<<<<<<< HEAD
             android:name=".MainActivity"
+=======
+            android:name=".ui.activities.MainActivity"
+>>>>>>> origin/main
 =======
             android:name=".ui.activities.MainActivity"
 >>>>>>> origin/main

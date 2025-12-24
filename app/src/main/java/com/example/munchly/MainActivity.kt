@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 <<<<<<< HEAD
+<<<<<<< HEAD
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -116,6 +117,8 @@ class MainActivity : ComponentActivity() {
                         MainScreen(userType = userType, username = username)
                     }
 =======
+=======
+>>>>>>> origin/main
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
@@ -155,13 +158,19 @@ class MainActivity : ComponentActivity() {
             viewModel.userState.collect { user ->
                 user?.let {
                     println("Loaded user: ${it.name}")
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
                 }
             }
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/main
 }
 
 @Composable
@@ -178,5 +187,8 @@ fun GreetingPreview() {
     MunchlyTheme {
         Greeting("Android")
     }
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
 }

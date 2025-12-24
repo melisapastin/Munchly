@@ -3,9 +3,12 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <SelectionState runConfigName="Munchly">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+=======
+>>>>>>> origin/main
 =======
 >>>>>>> origin/main
       <SelectionState runConfigName="app">

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -699,6 +700,708 @@
         </div>
     </div>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Discovery App - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5e6d3 0%, #fdf4e8 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #8b4513;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .screen:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(139, 69, 19, 0.25);
+        }
+
+        .screen-title {
+            color: #d2691e;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f4a460;
+            font-weight: 600;
+        }
+
+        .phone-frame {
+            background: linear-gradient(135deg, #fff8f0 0%, #fffbf5 100%);
+            border-radius: 15px;
+            padding: 30px 20px;
+            min-height: 600px;
+            border: 2px solid #e8d4bd;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #d2691e, #cd853f);
+            border-radius: 20px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
+        }
+
+        .app-name {
+            color: #8b4513;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tagline {
+            color: #a0826d;
+            font-size: 0.9em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #8b4513;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e8d4bd;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            color: #5d4e37;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #d2691e;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #d2691e, #cd853f);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(210, 105, 30, 0.4);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            color: #d2691e;
+            border: 2px solid #d2691e;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #fff8f0;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #a0826d;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e8d4bd;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0826d;
+            font-size: 0.9em;
+        }
+
+        .link a {
+            color: #d2691e;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link a:hover {
+            text-decoration: underline;
+        }
+
+        .user-type-card {
+            background: white;
+            border: 3px solid #e8d4bd;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .user-type-card:hover {
+            border-color: #d2691e;
+            background: #fff8f0;
+            transform: scale(1.02);
+        }
+
+        .user-type-card.selected {
+            border-color: #d2691e;
+            background: linear-gradient(135deg, #fff8f0, #fef5e7);
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.2);
+        }
+
+        .user-type-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .user-type-title {
+            color: #8b4513;
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .user-type-desc {
+            color: #a0826d;
+            font-size: 0.9em;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0826d;
+            font-size: 1.2em;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #e8d4bd;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #d2691e;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e8d4bd;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #8b4513;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip:hover, .chip.active {
+            background: linear-gradient(135deg, #d2691e, #cd853f);
+            color: white;
+            border-color: #d2691e;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(139, 69, 19, 0.1);
+            border: 2px solid #f5e6d3;
+            transition: all 0.2s ease;
+        }
+
+        .restaurant-card:hover {
+            border-color: #d2691e;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.2);
+        }
+
+        .restaurant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .restaurant-name {
+            color: #8b4513;
+            font-weight: 600;
+            font-size: 1.1em;
+            flex: 1;
+        }
+
+        .bookmark-icon {
+            font-size: 1.3em;
+            color: #d2691e;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .bookmark-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .restaurant-info {
+            color: #a0826d;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-icon {
+            color: #d2691e;
+        }
+
+        .cuisine-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #fff8f0;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #d2691e;
+            margin-top: 8px;
+            border: 1px solid #f4a460;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 2px solid #e8d4bd;
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #a0826d;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: #d2691e;
+        }
+
+        .nav-icon {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .nav-label {
+            font-size: 0.8em;
+        }
+
+        .detail-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f5e6d3, #fef5e7);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            border: 2px solid #e8d4bd;
+        }
+
+        .detail-header {
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            color: #8b4513;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .rating {
+            color: #d2691e;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e8d4bd;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            color: #8b4513;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .section-content {
+            color: #5d4e37;
+            line-height: 1.6;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #f5e6d3, #fef5e7);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0826d;
+            font-size: 1.2em;
+            border: 2px solid #e8d4bd;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-call, .btn-bookmark {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #d2691e, #cd853f);
+            color: white;
+            box-shadow: 0 4px 15px rgba(210, 105, 30, 0.3);
+        }
+
+        .btn-call:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(210, 105, 30, 0.4);
+        }
+
+        .btn-bookmark {
+            background: white;
+            color: #d2691e;
+            border: 2px solid #d2691e;
+        }
+
+        .btn-bookmark:hover {
+            background: #fff8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Restaurant Discovery App Wireframes</h1>
+        
+        <div class="screens-grid">
+            <!-- Login Screen -->
+            <div class="screen">
+                <div class="screen-title">Login Screen</div>
+                <div class="phone-frame">
+                    <div class="header">
+                        <div class="logo">🍴</div>
+                        <div class="app-name">FoodSpot</div>
+                        <div class="tagline">Discover Your Next Favorite Place</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" class="input-field" placeholder="your@email.com">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" class="input-field" placeholder="••••••••">
+                    </div>
+                    
+                    <button class="btn-primary">Sign In</button>
+                    
+                    <div class="divider">or</div>
+                    
+                    <button class="btn-secondary">Continue with Google</button>
+                    
+                    <div class="link">
+                        Don't have an account? <a href="#">Sign up</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Screen -->
+            <div class="screen">
+                <div class="screen-title">Register - User Type Selection</div>
+                <div class="phone-frame">
+                    <div class="header">
+                        <div class="logo">🍴</div>
+                        <div class="app-name">FoodSpot</div>
+                        <div class="tagline">Join Us Today</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px; text-align: center;">
+                        <h3 style="color: #8b4513; margin-bottom: 10px;">I am a...</h3>
+                        <p style="color: #a0826d; font-size: 0.9em;">Select how you'll use FoodSpot</p>
+                    </div>
+                    
+                    <div class="user-type-card selected">
+                        <div class="user-type-icon">👤</div>
+                        <div class="user-type-title">Food Lover</div>
+                        <div class="user-type-desc">Discover and bookmark restaurants</div>
+                    </div>
+                    
+                    <div class="user-type-card">
+                        <div class="user-type-icon">🏪</div>
+                        <div class="user-type-title">Restaurant Owner</div>
+                        <div class="user-type-desc">List and manage your restaurant</div>
+                    </div>
+                    
+                    <button class="btn-primary">Continue</button>
+                    
+                    <div class="link">
+                        Already have an account? <a href="#">Sign in</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed Screen -->
+            <div class="screen">
+                <div class="screen-title">Restaurant Feed</div>
+                <div class="phone-frame">
+                    <div class="search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Search restaurants or cuisine...">
+                    </div>
+                    
+                    <div class="filter-chips">
+                        <div class="chip active">Near Me</div>
+                        <div class="chip">Italian</div>
+                        <div class="chip">Asian</div>
+                        <div class="chip">Vegan</div>
+                    </div>
+                    
+                    <div class="restaurant-card">
+                        <div class="restaurant-header">
+                            <div class="restaurant-name">The Golden Fork</div>
+                            <div class="bookmark-icon">🔖</div>
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">🕒</span>
+                            Mon-Fri: 11:00 AM - 10:00 PM
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">📍</span>
+                            Downtown, 0.5 mi
+                        </div>
+                        <span class="cuisine-tag">Italian</span>
+                    </div>
+                    
+                    <div class="restaurant-card">
+                        <div class="restaurant-header">
+                            <div class="restaurant-name">Sakura Garden</div>
+                            <div class="bookmark-icon" style="opacity: 0.3">🔖</div>
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">🕒</span>
+                            Daily: 12:00 PM - 11:00 PM
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">📍</span>
+                            Midtown, 1.2 mi
+                        </div>
+                        <span class="cuisine-tag">Japanese</span>
+                    </div>
+                    
+                    <div class="restaurant-card">
+                        <div class="restaurant-header">
+                            <div class="restaurant-name">Green Leaf Bistro</div>
+                            <div class="bookmark-icon">🔖</div>
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">🕒</span>
+                            Mon-Sun: 10:00 AM - 9:00 PM
+                        </div>
+                        <div class="restaurant-info">
+                            <span class="info-icon">📍</span>
+                            Eastside, 2.0 mi
+                        </div>
+                        <span class="cuisine-tag">Vegan</span>
+                    </div>
+                    
+                    <div class="bottom-nav">
+                        <div class="nav-item active">
+                            <div class="nav-icon">🏠</div>
+                            <div class="nav-label">Home</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">🔍</div>
+                            <div class="nav-label">Search</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">🔖</div>
+                            <div class="nav-label">Saved</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">👤</div>
+                            <div class="nav-label">Profile</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Screen -->
+            <div class="screen">
+                <div class="screen-title">Restaurant Detail</div>
+                <div class="phone-frame">
+                    <div class="detail-image">🍝</div>
+                    
+                    <div class="detail-header">
+                        <div class="detail-title">The Golden Fork</div>
+                        <div class="rating">⭐ 4.8 (324 reviews)</div>
+                        <span class="cuisine-tag">Italian</span>
+                        <span class="cuisine-tag">Fine Dining</span>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="section-title">📝 About</div>
+                        <div class="section-content">
+                            An authentic Italian restaurant serving handmade pasta, wood-fired pizzas, and traditional dishes from various regions of Italy. Family-owned since 1985.
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="section-title">🕒 Working Hours</div>
+                        <div class="section-content">
+                            Monday - Friday: 11:00 AM - 10:00 PM<br>
+                            Saturday: 10:00 AM - 11:00 PM<br>
+                            Sunday: 10:00 AM - 9:00 PM
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="section-title">📍 Location</div>
+                        <div class="section-content">
+                            123 Main Street, Downtown<br>
+                            New York, NY 10001
+                        </div>
+                        <div class="map-placeholder">🗺️ Interactive Map</div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-call">📞 Call</button>
+                        <button class="btn-bookmark">🔖 Bookmark</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+>>>>>>> origin/main
 =======
 <!DOCTYPE html>
 <html lang="en">

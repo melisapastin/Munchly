@@ -1,6 +1,7 @@
 package com.example.munchly.ui.theme
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -70,6 +71,8 @@ object MunchlyColors {
     val buttonDisabled: Color @Composable get() = if (isSystemInDarkTheme()) DarkButtonDisabled else LightButtonDisabled
 }
 =======
+=======
+>>>>>>> origin/main
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -102,11 +105,15 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
 
 @Composable
 fun MunchlyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+<<<<<<< HEAD
 <<<<<<< HEAD
     content: @Composable () -> Unit
 ) {
@@ -115,6 +122,8 @@ fun MunchlyTheme(
     MaterialTheme(
         colorScheme = colorScheme,
 =======
+=======
+>>>>>>> origin/main
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -132,6 +141,9 @@ fun MunchlyTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
         content = content
     )

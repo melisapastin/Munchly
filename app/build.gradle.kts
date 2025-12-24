@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 =======
 
 >>>>>>> origin/main
@@ -12,7 +16,13 @@ plugins {
 android {
     namespace = "com.example.munchly"
 <<<<<<< HEAD
+<<<<<<< HEAD
     compileSdk = 34
+=======
+    compileSdk {
+        version = release(36)
+    }
+>>>>>>> origin/main
 =======
     compileSdk {
         version = release(36)
@@ -23,7 +33,11 @@ android {
         applicationId = "com.example.munchly"
         minSdk = 26
 <<<<<<< HEAD
+<<<<<<< HEAD
         targetSdk = 34
+=======
+        targetSdk = 36
+>>>>>>> origin/main
 =======
         targetSdk = 36
 >>>>>>> origin/main
@@ -56,7 +70,10 @@ android {
 
 dependencies {
 <<<<<<< HEAD
+<<<<<<< HEAD
     // Core Android & Compose (keep existing libs)
+=======
+>>>>>>> origin/main
 =======
 >>>>>>> origin/main
     implementation(libs.androidx.core.ktx)
@@ -67,6 +84,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     // Navigation
@@ -90,6 +108,8 @@ dependencies {
     // Testing
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> origin/main
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -98,8 +118,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
+=======
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+>>>>>>> origin/main
 =======
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
