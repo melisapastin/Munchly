@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57558245105",
+    "project_id": "munchly-c5ccb",
+    "storage_bucket": "munchly-c5ccb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57558245105:android:338c2f59fc74cc45e0d350",
+        "android_client_info": {
+          "package_name": "com.example.munchly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3mZo1IAdjbYtvpaE848Q8QNmX4dFyszw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
