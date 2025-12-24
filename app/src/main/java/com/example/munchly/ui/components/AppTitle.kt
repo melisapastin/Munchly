@@ -7,10 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.munchly.ui.theme.MunchlyColors
 
 @Composable
 fun AppTitle(
@@ -22,13 +22,13 @@ fun AppTitle(
             text = title,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF8B4513)
+            color = MunchlyColors.textPrimary
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = subtitle,
             fontSize = 14.sp,
-            color = Color(0xFF8B7355)
+            color = MunchlyColors.textSecondary
         )
     }
 }

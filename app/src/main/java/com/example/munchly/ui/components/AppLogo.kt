@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.munchly.ui.theme.MunchlyColors
 
 @Composable
 fun AppLogo() {
@@ -21,7 +22,7 @@ fun AppLogo() {
             .size(80.dp)
             .shadow(8.dp, RoundedCornerShape(20.dp))
             .background(
-                color = Color(0xFFD2691E),
+                color = MunchlyColors.primary,
                 shape = RoundedCornerShape(20.dp)
             ),
         contentAlignment = Alignment.Center

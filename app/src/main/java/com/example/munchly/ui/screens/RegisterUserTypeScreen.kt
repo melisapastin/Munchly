@@ -13,7 +13,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -23,6 +22,7 @@ import com.example.munchly.ui.components.AppTitle
 import com.example.munchly.ui.components.AuthButton
 import com.example.munchly.ui.components.SignInPrompt
 import com.example.munchly.ui.components.UserTypeCard
+import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.RegisterUserTypeViewModel
 
 @Composable
@@ -30,12 +30,12 @@ fun RegisterUserTypeScreen(
     navController: NavController
 ) {
     val viewModel: RegisterUserTypeViewModel = viewModel()
-    val state by viewModel.uiState.collectAsState() // ✅ Fixed - use collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE8D5C4))
+            .background(MunchlyColors.background)
     ) {
         Column(
             modifier = Modifier

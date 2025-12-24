@@ -3,6 +3,7 @@ package com.example.munchly.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.munchly.data.models.User
+import com.example.munchly.domain.usecases.AuthException
 import com.example.munchly.domain.usecases.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +40,11 @@ class LoginViewModel(
     fun login() {
         val currentState = _uiState.value
 
-        val validation = validateCredentials(currentState.email, currentState.password)
+        val validation = loginUseCase.validateCredentials(
+            email = currentState.email,
+            password = currentState.password
+        )
+
         if (!validation.isValid) {
             _uiState.update {
                 it.copy(
@@ -55,7 +60,7 @@ class LoginViewModel(
         viewModelScope.launch {
             val result = loginUseCase(
                 email = currentState.email.trim(),
-                password = currentState.password.trim()
+                password = currentState.password
             )
 
             _uiState.update { it.copy(isLoading = false) }
@@ -68,76 +73,19 @@ class LoginViewModel(
                     )
                 }
             } else {
-                val exception = result.exceptionOrNull()
-                val errorMessage = parseFirebaseError(exception)
-
+                val errorMessage = mapErrorToMessage(result.exceptionOrNull())
                 _uiState.update { it.copy(error = errorMessage) }
             }
         }
     }
 
-    private fun validateCredentials(email: String, password: String): ValidationResult {
-        val emailError = when {
-            email.isBlank() -> "Please enter your email address"
-            !isValidEmail(email) -> "Please enter a valid email address"
-            else -> null
-        }
-
-        val passwordError = when {
-            password.isBlank() -> "Please enter your password"
-            password.length < 6 -> "Password must be at least 6 characters"
-            else -> null
-        }
-
-        return ValidationResult(
-            emailError = emailError,
-            passwordError = passwordError,
-            isValid = emailError == null && passwordError == null
-        )
-    }
-
-    private fun parseFirebaseError(exception: Throwable?): String {
-        val message = exception?.message?.lowercase() ?: ""
-
-        return when {
-            // Authentication errors
-            message.contains("password") ||
-                    message.contains("credential") ||
-                    message.contains("incorrect") ||
-                    message.contains("invalid") ->
-                "Invalid email or password. Please check your credentials and try again."
-
-            // User not found
-            message.contains("user") && message.contains("not found") ->
-                "No account found with this email. Please sign up first."
-
-            // Network errors
-            message.contains("network") ||
-                    message.contains("connection") ||
-                    message.contains("timeout") ->
-                "Network error. Please check your internet connection."
-
-            // Too many attempts
-            message.contains("too many") || message.contains("blocked") ->
-                "Too many failed attempts. Please try again later."
-
-            // Email format
-            message.contains("email") && message.contains("badly formatted") ->
-                "Please enter a valid email address."
-
-            // Generic fallback
-            else ->
-                "Unable to sign in. Please try again."
+    private fun mapErrorToMessage(exception: Throwable?): String {
+        return when (exception) {
+            is AuthException.InvalidCredentials -> "Invalid email or password"
+            is AuthException.UserNotFound -> "No account found with this email"
+            is AuthException.NetworkError -> "Network error. Please check your connection"
+            is AuthException.UserDataNotFound -> "Account data not found. Please contact support"
+            else -> "An error occurred. Please try again"
         }
     }
-
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private data class ValidationResult(
-        val emailError: String?,
-        val passwordError: String?,
-        val isValid: Boolean
-    )
 }

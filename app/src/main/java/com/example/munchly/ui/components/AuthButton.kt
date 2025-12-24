@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.munchly.ui.theme.MunchlyColors
 
 @Composable
 fun AuthButton(
@@ -23,8 +24,8 @@ fun AuthButton(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFD2691E),
-            disabledContainerColor = Color(0xFFB0A090)
+            containerColor = MunchlyColors.primary,
+            disabledContainerColor = MunchlyColors.buttonDisabled
         ),
         enabled = isEnabled,
         shape = RoundedCornerShape(12.dp),

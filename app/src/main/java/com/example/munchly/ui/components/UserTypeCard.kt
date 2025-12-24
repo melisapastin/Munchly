@@ -18,9 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.munchly.ui.theme.MunchlyColors
 
 @Composable
 fun UserTypeCard(
@@ -37,9 +37,9 @@ fun UserTypeCard(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) Color(0xFFD2691E) else Color(0xFFE0E0E0)
+            color = if (isSelected) MunchlyColors.primary else MunchlyColors.borderDefault
         ),
-        color = if (isSelected) Color(0x33D2691E) else Color.White
+        color = if (isSelected) MunchlyColors.primaryLight else MunchlyColors.surface
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -51,12 +51,12 @@ fun UserTypeCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF8B4513)
+                    color = MunchlyColors.textPrimary
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF8B7355),
+                    color = MunchlyColors.textSecondary,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -65,7 +65,7 @@ fun UserTypeCard(
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Selected",
-                    tint = Color(0xFFD2691E),
+                    tint = MunchlyColors.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }

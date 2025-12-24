@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.munchly.data.models.User
 import com.example.munchly.data.models.UserType
+import com.example.munchly.domain.usecases.AuthException
 import com.example.munchly.domain.usecases.RegisterUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,13 +47,20 @@ class RegisterCredentialsViewModel(
     fun register(userType: UserType) {
         val currentState = _uiState.value
 
-        val validation = validateCredentials(currentState)
+        val validation = registerUseCase.validateCredentials(
+            username = currentState.username,
+            email = currentState.email,
+            password = currentState.password
+        )
+
         if (!validation.isValid) {
-            _uiState.update { it.copy(
-                usernameError = validation.usernameError,
-                emailError = validation.emailError,
-                passwordError = validation.passwordError
-            ) }
+            _uiState.update {
+                it.copy(
+                    usernameError = validation.usernameError,
+                    emailError = validation.emailError,
+                    passwordError = validation.passwordError
+                )
+            }
             return
         }
 
@@ -61,7 +69,7 @@ class RegisterCredentialsViewModel(
         viewModelScope.launch {
             val result = registerUseCase(
                 email = currentState.email.trim(),
-                password = currentState.password.trim(),
+                password = currentState.password,
                 username = currentState.username.trim(),
                 userType = userType
             )
@@ -76,49 +84,19 @@ class RegisterCredentialsViewModel(
                     )
                 }
             } else {
-                _uiState.update { it.copy(error = result.exceptionOrNull()?.message) }
+                val errorMessage = mapErrorToMessage(result.exceptionOrNull())
+                _uiState.update { it.copy(error = errorMessage) }
             }
         }
     }
 
-    private fun validateCredentials(state: RegisterCredentialsState): ValidationResult {
-        val usernameError = when {
-            state.username.isBlank() -> "Username cannot be empty"
-            state.username.length < 3 -> "Username must be at least 3 characters"
-            state.username.length > 20 -> "Username must be less than 20 characters"
-            !state.username.matches(Regex("^[a-zA-Z0-9_]+$")) ->
-                "Username can only contain letters, numbers and underscores"
-            else -> null
+    private fun mapErrorToMessage(exception: Throwable?): String {
+        return when (exception) {
+            is AuthException.EmailAlreadyInUse -> "This email is already registered"
+            is AuthException.UsernameAlreadyTaken -> "This username is already taken"
+            is AuthException.WeakPassword -> "Password is too weak. Please use a stronger password"
+            is AuthException.NetworkError -> "Network error. Please check your connection"
+            else -> "Registration failed. Please try again"
         }
-
-        val emailError = when {
-            state.email.isBlank() -> "Email cannot be empty"
-            !isValidEmail(state.email) -> "Please enter a valid email"
-            else -> null
-        }
-
-        val passwordError = when {
-            state.password.isBlank() -> "Password cannot be empty"
-            state.password.length < 6 -> "Password must be at least 6 characters"
-            else -> null
-        }
-
-        return ValidationResult(
-            usernameError = usernameError,
-            emailError = emailError,
-            passwordError = passwordError,
-            isValid = usernameError == null && emailError == null && passwordError == null
-        )
     }
-
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private data class ValidationResult(
-        val usernameError: String?,
-        val emailError: String?,
-        val passwordError: String?,
-        val isValid: Boolean
-    )
 }

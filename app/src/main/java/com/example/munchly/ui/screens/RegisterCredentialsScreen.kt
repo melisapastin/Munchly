@@ -19,8 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -32,6 +32,7 @@ import com.example.munchly.ui.components.AuthButton
 import com.example.munchly.ui.components.AuthFieldLabel
 import com.example.munchly.ui.components.SignInPrompt
 import com.example.munchly.ui.components.ValidationTextField
+import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.RegisterCredentialsViewModel
 
 @Composable
@@ -56,7 +57,7 @@ fun RegisterCredentialsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE8D5C4))
+            .background(MunchlyColors.background)
     ) {
         Column(
             modifier = Modifier
@@ -75,7 +76,7 @@ fun RegisterCredentialsScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MunchlyColors.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -90,7 +91,8 @@ fun RegisterCredentialsScreen(
                         onValueChange = viewModel::onUsernameChange,
                         placeholder = "Choose a username",
                         isError = state.usernameError != null,
-                        errorMessage = state.usernameError
+                        errorMessage = state.usernameError,
+                        imeAction = ImeAction.Next
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -102,7 +104,8 @@ fun RegisterCredentialsScreen(
                         onValueChange = viewModel::onEmailChange,
                         placeholder = "your@email.com",
                         isError = state.emailError != null,
-                        errorMessage = state.emailError
+                        errorMessage = state.emailError,
+                        imeAction = ImeAction.Next
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -115,14 +118,16 @@ fun RegisterCredentialsScreen(
                         placeholder = "········",
                         isPassword = true,
                         isError = state.passwordError != null,
-                        errorMessage = state.passwordError
+                        errorMessage = state.passwordError,
+                        imeAction = ImeAction.Done,
+                        onImeAction = { viewModel.register(userType) }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     if (state.isLoading) {
                         CircularProgressIndicator(
-                            color = Color(0xFFD2691E),
+                            color = MunchlyColors.primary,
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                     } else {
@@ -138,12 +143,12 @@ fun RegisterCredentialsScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFFEBEE)
+                                containerColor = MunchlyColors.errorBackground
                             )
                         ) {
                             Text(
                                 text = error,
-                                color = Color(0xFFC62828),
+                                color = MunchlyColors.error,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(12.dp)
                             )

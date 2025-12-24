@@ -17,100 +17,103 @@ import com.example.munchly.ui.screens.LoginScreen
 import com.example.munchly.ui.screens.MainScreen
 import com.example.munchly.ui.screens.RegisterUserTypeScreen
 import com.example.munchly.ui.screens.RegisterCredentialsScreen
+import com.example.munchly.ui.theme.MunchlyTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberNavController()
+            MunchlyTheme {
+                val navController = rememberNavController()
 
-            NavHost(
-                navController = navController,
-                startDestination = "login"
-            ) {
-                composable(
-                    "login",
-                    enterTransition = {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(300)
-                        )
-                    },
-                    exitTransition = {
-                        slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(300)
-                        )
-                    }
+                NavHost(
+                    navController = navController,
+                    startDestination = "login"
                 ) {
-                    LoginScreen(navController = navController)
-                }
-
-                composable(
-                    "register_user_type",
-                    enterTransition = {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(300)
-                        )
-                    },
-                    exitTransition = {
-                        slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(300)
-                        )
-                    }
-                ) {
-                    RegisterUserTypeScreen(navController = navController)
-                }
-
-                composable(
-                    route = "register_credentials/{userType}",
-                    arguments = listOf(
-                        navArgument("userType") {
-                            type = NavType.StringType
+                    composable(
+                        "login",
+                        enterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300)
+                            )
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300)
+                            )
                         }
-                    ),
-                    enterTransition = {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(300)
-                        )
-                    },
-                    exitTransition = {
-                        slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(300)
+                    ) {
+                        LoginScreen(navController = navController)
+                    }
+
+                    composable(
+                        "register_user_type",
+                        enterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300)
+                            )
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300)
+                            )
+                        }
+                    ) {
+                        RegisterUserTypeScreen(navController = navController)
+                    }
+
+                    composable(
+                        route = "register_credentials/{userType}",
+                        arguments = listOf(
+                            navArgument("userType") {
+                                type = NavType.StringType
+                            }
+                        ),
+                        enterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300)
+                            )
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300)
+                            )
+                        }
+                    ) { backStackEntry ->
+                        val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
+                        val userType = UserType.valueOf(userTypeString)
+
+                        RegisterCredentialsScreen(
+                            navController = navController,
+                            userType = userType
                         )
                     }
-                ) { backStackEntry ->
-                    val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
-                    val userType = UserType.valueOf(userTypeString)
 
-                    RegisterCredentialsScreen(
-                        navController = navController,
-                        userType = userType
-                    )
-                }
+                    composable(
+                        route = "main/{userType}/{username}",
+                        arguments = listOf(
+                            navArgument("userType") { type = NavType.StringType },
+                            navArgument("username") { type = NavType.StringType }
+                        ),
+                        enterTransition = {
+                            fadeIn(animationSpec = tween(300))
+                        },
+                        exitTransition = {
+                            fadeOut(animationSpec = tween(300))
+                        }
+                    ) { backStackEntry ->
+                        val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
+                        val username = backStackEntry.arguments?.getString("username") ?: ""
+                        val userType = UserType.valueOf(userTypeString)
 
-                composable(
-                    route = "main/{userType}/{username}",
-                    arguments = listOf(
-                        navArgument("userType") { type = NavType.StringType },
-                        navArgument("username") { type = NavType.StringType }
-                    ),
-                    enterTransition = {
-                        fadeIn(animationSpec = tween(300))
-                    },
-                    exitTransition = {
-                        fadeOut(animationSpec = tween(300))
+                        MainScreen(userType = userType, username = username)
                     }
-                ) { backStackEntry ->
-                    val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
-                    val username = backStackEntry.arguments?.getString("username") ?: ""
-                    val userType = UserType.valueOf(userTypeString)
-
-                    MainScreen(userType = userType, username = username)
                 }
             }
         }

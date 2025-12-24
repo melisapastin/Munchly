@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.munchly.ui.theme.MunchlyColors
 
 @Composable
 fun SignUpPrompt(onNavigateToRegister: () -> Unit) {
@@ -15,13 +15,13 @@ fun SignUpPrompt(onNavigateToRegister: () -> Unit) {
         Text(
             text = "Don't have an account? ",
             fontSize = 14.sp,
-            color = Color(0xFF8B7355)
+            color = MunchlyColors.textSecondary
         )
         Text(
             text = "Sign up",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFFD2691E),
+            color = MunchlyColors.primary,
             modifier = Modifier.clickable(onClick = onNavigateToRegister)
         )
     }
