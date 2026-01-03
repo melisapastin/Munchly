@@ -3,24 +3,24 @@ package com.example.munchly
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-<<<<<<< HEAD
-<<<<<<< HEAD
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.munchly.data.models.UserType
 import com.example.munchly.ui.screens.LoginScreen
 import com.example.munchly.ui.screens.MainScreen
-import com.example.munchly.ui.screens.RegisterUserTypeScreen
 import com.example.munchly.ui.screens.RegisterCredentialsScreen
+import com.example.munchly.ui.screens.RegisterUserTypeScreen
+import com.example.munchly.data.models.UserType
 import com.example.munchly.ui.theme.MunchlyTheme
 
+/**
+ * Main activity for Munchly app.
+ * Handles top-level navigation between auth screens and main app.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +32,9 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = "login"
                 ) {
+                    // Login screen
                     composable(
-                        "login",
+                        route = "login",
                         enterTransition = {
                             slideIntoContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Right,
@@ -50,8 +51,9 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(navController = navController)
                     }
 
+                    // Register: select user type
                     composable(
-                        "register_user_type",
+                        route = "register_user_type",
                         enterTransition = {
                             slideIntoContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -68,6 +70,7 @@ class MainActivity : ComponentActivity() {
                         RegisterUserTypeScreen(navController = navController)
                     }
 
+                    // Register: enter credentials
                     composable(
                         route = "register_credentials/{userType}",
                         arguments = listOf(
@@ -88,8 +91,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) { backStackEntry ->
-                        val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
-                        val userType = UserType.valueOf(userTypeString)
+                        val userTypeString = backStackEntry.arguments?.getString("userType")
+                            ?: "FOOD_LOVER"
+                        val userType = try {
+                            UserType.valueOf(userTypeString)
+                        } catch (e: IllegalArgumentException) {
+                            UserType.FOOD_LOVER
+                        }
 
                         RegisterCredentialsScreen(
                             navController = navController,
@@ -97,98 +105,47 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // Main app screen
                     composable(
-                        route = "main/{userType}/{username}",
+                        route = "main/{userType}/{userId}/{username}",
                         arguments = listOf(
                             navArgument("userType") { type = NavType.StringType },
+                            navArgument("userId") { type = NavType.StringType },
                             navArgument("username") { type = NavType.StringType }
                         ),
                         enterTransition = {
-                            fadeIn(animationSpec = tween(300))
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300)
+                            )
                         },
                         exitTransition = {
-                            fadeOut(animationSpec = tween(300))
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300)
+                            )
                         }
                     ) { backStackEntry ->
-                        val userTypeString = backStackEntry.arguments?.getString("userType") ?: "FOOD_LOVER"
+                        val userTypeString = backStackEntry.arguments?.getString("userType")
+                            ?: "FOOD_LOVER"
+                        val userId = backStackEntry.arguments?.getString("userId") ?: ""
                         val username = backStackEntry.arguments?.getString("username") ?: ""
-                        val userType = UserType.valueOf(userTypeString)
 
-                        MainScreen(userType = userType, username = username)
+                        val userType = try {
+                            UserType.valueOf(userTypeString)
+                        } catch (e: IllegalArgumentException) {
+                            UserType.FOOD_LOVER
+                        }
+
+                        MainScreen(
+                            userType = userType,
+                            username = username,
+                            userId = userId,
+                            navController = navController
+                        )
                     }
-=======
-=======
->>>>>>> origin/main
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
-import com.example.munchly.ui.theme.MunchlyTheme
-import com.example.munchly.ui.viewmodels.UserViewModel
-import kotlinx.coroutines.launch
-import kotlin.getValue
-
-class MainActivity : ComponentActivity() {
-    private val viewModel: UserViewModel by viewModels()
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            MunchlyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-
-        // Example usage
-        lifecycleScope.launch {
-            viewModel.loadUser("user_123")
-            viewModel.userState.collect { user ->
-                user?.let {
-                    println("Loaded user: ${it.name}")
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> origin/main
                 }
             }
         }
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> origin/main
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MunchlyTheme {
-        Greeting("Android")
-    }
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> origin/main
 }

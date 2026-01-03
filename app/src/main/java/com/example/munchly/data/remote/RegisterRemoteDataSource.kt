@@ -2,7 +2,7 @@ package com.example.munchly.data.remote
 
 import com.example.munchly.data.models.User
 import com.example.munchly.data.models.UserType
-import com.example.munchly.domain.usecases.AuthException
+import com.example.munchly.domain.exceptions.AuthException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException

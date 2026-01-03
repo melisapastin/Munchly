@@ -1,4 +1,4 @@
-package com.example.munchly.domain.usecases
+package com.example.munchly.domain.exceptions
 
 sealed class AuthException(message: String) : Exception(message) {
     // Authentication errors

@@ -43,7 +43,7 @@ fun LoginScreen(navController: NavController) {
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
             state.user?.let { user ->
-                navController.navigate("main/${user.userType.name}/${user.username}") {
+                navController.navigate("main/${user.userType.name}/${user.uid}/${user.username}") {
                     popUpTo("login") { inclusive = true }
                 }
             }

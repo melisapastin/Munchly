@@ -3,7 +3,7 @@ package com.example.munchly.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.munchly.data.models.User
-import com.example.munchly.domain.usecases.AuthException
+import com.example.munchly.domain.exceptions.AuthException
 import com.example.munchly.domain.usecases.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
