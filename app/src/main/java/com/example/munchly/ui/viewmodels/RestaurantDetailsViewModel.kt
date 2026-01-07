@@ -37,14 +37,16 @@ data class RestaurantDetailsState(
 )
 
 // ============================================================================
-// VIEWMODEL - FIXED USER STATS TRACKING
+// VIEWMODEL - COMPLETELY FIXED FOR NEW ACHIEVEMENT LOGIC
 // ============================================================================
 
 /**
- * FIXED: Now properly tracks:
- * - totalRatings: Only ratings > 0
- * - uniqueRestaurantsVisited: Set of unique restaurant IDs
- * - uniqueVeganRestaurantsRated: Set of unique vegan restaurant IDs (only with ratings > 0)
+ * FIXED: Now properly tracks stats based on new requirements:
+ * - totalReviews: Count of ALL reviews with text (not unique)
+ * - totalRatings: Count of ALL ratings with stars ≥1 and ≤5 (not unique)
+ * - uniqueBookmarkedRestaurants: Set of currently bookmarked restaurant IDs
+ * - uniqueVeganRestaurantsRated: Set of unique vegan restaurant IDs rated
+ * - uniqueRestaurantsVisitedSet: Set of unique restaurant IDs visited (review OR rating)
  */
 class RestaurantDetailsViewModel(
     private val restaurantId: String,
@@ -155,6 +157,9 @@ class RestaurantDetailsViewModel(
         }
     }
 
+    /**
+     * FIXED: Now updates uniqueBookmarkedRestaurants Set correctly
+     */
     fun toggleBookmark() {
         viewModelScope.launch {
             val result = toggleBookmarkUseCase(userId, restaurantId)
@@ -162,14 +167,19 @@ class RestaurantDetailsViewModel(
                 val isBookmarked = result.getOrNull() ?: false
                 _uiState.update { it.copy(isBookmarked = isBookmarked) }
 
-                if (isBookmarked) {
-                    updateUserStatsUseCase(userId) { stats ->
-                        stats.copy(totalBookmarks = stats.totalBookmarks + 1)
-                    }
-                } else {
-                    updateUserStatsUseCase(userId) { stats ->
+                // Update stats with correct Set tracking
+                updateUserStatsUseCase(userId) { stats ->
+                    if (isBookmarked) {
+                        // Add restaurant to bookmarked set
                         stats.copy(
-                            totalBookmarks = (stats.totalBookmarks - 1).coerceAtLeast(0)
+                            uniqueBookmarkedRestaurants = stats.uniqueBookmarkedRestaurants + restaurantId,
+                            totalBookmarks = stats.uniqueBookmarkedRestaurants.size + 1  // Update deprecated field
+                        )
+                    } else {
+                        // Remove restaurant from bookmarked set
+                        stats.copy(
+                            uniqueBookmarkedRestaurants = stats.uniqueBookmarkedRestaurants - restaurantId,
+                            totalBookmarks = (stats.uniqueBookmarkedRestaurants.size - 1).coerceAtLeast(0)
                         )
                     }
                 }
@@ -188,7 +198,14 @@ class RestaurantDetailsViewModel(
     }
 
     /**
-     * FIXED: Properly tracks stats based on rating value
+     * COMPLETELY REWRITTEN: Tracks stats according to new requirements
+     *
+     * Rules:
+     * 1. Culinary Critic: Increment totalReviews ONLY if comment exists
+     * 2. Rating Expert: Increment totalRatings ONLY if rating ≥1 and ≤5
+     * 3. Bookmark Collector: Track in uniqueBookmarkedRestaurants Set
+     * 4. Veggie Lover: Add to uniqueVeganRestaurantsRated Set ONLY if rated AND vegan
+     * 5. Foodie Explorer: Add to uniqueRestaurantsVisitedSet if review OR rating
      */
     fun submitReview(
         rating: Double,
@@ -212,6 +229,7 @@ class RestaurantDetailsViewModel(
                 val createdReview = result.getOrNull()
                 Log.d("RestaurantDetailsVM", "Review created successfully with ID: ${createdReview?.id}")
 
+                // Update restaurant stats
                 val statsResult = incrementRestaurantStatsUseCase(
                     restaurantId = restaurantId,
                     newRating = rating,
@@ -229,81 +247,68 @@ class RestaurantDetailsViewModel(
                     )
                 }
 
-                // FIXED: Update user stats with proper logic
+                // Get restaurant info for vegan check
                 val restaurant = _uiState.value.restaurant
                 val isVegan = restaurant?.tags?.any {
                     it.lowercase() == "vegan"
                 } ?: false
 
+                // Determine what was submitted
                 val hasComment = comment.trim().isNotEmpty()
-                val hasRating = rating > 0.0
+                val hasValidRating = rating >= 1.0 && rating <= 5.0
 
-                Log.d("RestaurantDetailsVM", "Updating stats - hasComment: $hasComment, hasRating: $hasRating, isVegan: $isVegan")
+                Log.d("RestaurantDetailsVM", "Stats update - hasComment: $hasComment, hasValidRating: $hasValidRating, isVegan: $isVegan")
 
+                // Update user stats with new logic
                 updateUserStatsUseCase(userId) { stats ->
                     Log.d("RestaurantDetailsVM", "Current stats - " +
                             "totalReviews: ${stats.totalReviews}, " +
                             "totalRatings: ${stats.totalRatings}, " +
-                            "uniqueVisited: ${stats.uniqueRestaurantsVisited}, " +
-                            "uniqueWithRatings: ${stats.uniqueRestaurantsWithRatings.size}, " +
+                            "uniqueVisited: ${stats.uniqueRestaurantsVisitedSet.size}, " +
                             "uniqueVegan: ${stats.uniqueVeganRestaurantsRated.size}")
 
-                    // Increment totalReviews ONLY if comment exists
+                    // 1. CULINARY CRITIC: Increment totalReviews if comment exists
                     val newTotalReviews = if (hasComment) {
                         stats.totalReviews + 1
                     } else {
                         stats.totalReviews
                     }
 
-                    // Increment totalRatings ONLY if rating > 0
-                    val newTotalRatings = if (hasRating) {
+                    // 2. RATING EXPERT: Increment totalRatings if rating is valid (≥1 and ≤5)
+                    val newTotalRatings = if (hasValidRating) {
                         stats.totalRatings + 1
                     } else {
                         stats.totalRatings
                     }
 
-                    // Add to uniqueRestaurantsWithRatings ONLY if rating > 0
-                    val newUniqueWithRatings = if (hasRating) {
-                        stats.uniqueRestaurantsWithRatings + restaurantId
-                    } else {
-                        stats.uniqueRestaurantsWithRatings
-                    }
-
-                    // Add to uniqueVeganRestaurantsRated ONLY if vegan AND rating > 0
-                    val newUniqueVeganRated = if (isVegan && hasRating) {
+                    // 4. VEGGIE LOVER: Add to uniqueVeganRestaurantsRated if vegan AND rated
+                    val newUniqueVeganRated = if (isVegan && hasValidRating) {
                         stats.uniqueVeganRestaurantsRated + restaurantId
                     } else {
                         stats.uniqueVeganRestaurantsRated
                     }
 
-                    // FIXED: Add restaurant to uniqueVisitedRestaurants Set
-                    // This ensures Foodie Explorer counts unique restaurants
-                    val newUniqueVisitedSet = if (hasComment || hasRating) {
-                        // Count as "visited" if they left a review OR rating
-                        stats.uniqueVisitedRestaurants + restaurantId
+                    // 5. FOODIE EXPLORER: Add to uniqueRestaurantsVisitedSet if review OR rating
+                    val newUniqueVisited = if (hasComment || hasValidRating) {
+                        stats.uniqueRestaurantsVisitedSet + restaurantId
                     } else {
-                        stats.uniqueVisitedRestaurants
+                        stats.uniqueRestaurantsVisitedSet
                     }
-
-                    val newUniqueVisitedCount = newUniqueVisitedSet.size
 
                     val updatedStats = stats.copy(
                         totalReviews = newTotalReviews,
                         totalRatings = newTotalRatings,
-                        uniqueRestaurantsVisited = newUniqueVisitedCount,
-                        uniqueRestaurantsWithRatings = newUniqueWithRatings,
                         uniqueVeganRestaurantsRated = newUniqueVeganRated,
-                        uniqueVisitedRestaurants = newUniqueVisitedSet,  // ADD THIS
-                        // Keep old fields for backward compatibility
-                        totalBookmarks = stats.totalBookmarks,
-                        veganRestaurantsRated = newUniqueVeganRated.size
+                        uniqueRestaurantsVisitedSet = newUniqueVisited,
+                        // Update deprecated fields for backward compatibility
+                        veganRestaurantsRated = newUniqueVeganRated.size,
+                        uniqueRestaurantsVisited = newUniqueVisited.size
                     )
 
                     Log.d("RestaurantDetailsVM", "New stats - " +
                             "totalReviews: ${updatedStats.totalReviews}, " +
                             "totalRatings: ${updatedStats.totalRatings}, " +
-                            "uniqueVisited: ${updatedStats.uniqueRestaurantsVisited}, " +
-                            "uniqueWithRatings: ${updatedStats.uniqueRestaurantsWithRatings.size}, " +
+                            "uniqueVisited: ${updatedStats.uniqueRestaurantsVisitedSet.size}, " +
                             "uniqueVegan: ${updatedStats.uniqueVeganRestaurantsRated.size}")
 
                     updatedStats

@@ -64,8 +64,7 @@ class GetUserAchievementsUseCase(
         lastUpdated = System.currentTimeMillis(),
         uniqueBookmarkedRestaurants = emptySet(),
         uniqueVeganRestaurantsRated = emptySet(),
-        uniqueRestaurantsWithRatings = emptySet(),
-        uniqueVisitedRestaurants = emptySet()
+        uniqueRestaurantsVisitedSet = emptySet()  // FIXED
     )
 }
 
@@ -133,6 +132,6 @@ class UpdateUserStatsUseCase(
         lastUpdated = System.currentTimeMillis(),
         uniqueBookmarkedRestaurants = emptySet(),
         uniqueVeganRestaurantsRated = emptySet(),
-        uniqueRestaurantsWithRatings = emptySet()
+        uniqueRestaurantsVisitedSet = emptySet()  // FIXED
     )
 }

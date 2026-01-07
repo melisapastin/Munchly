@@ -48,7 +48,8 @@ fun AchievementTypeDomain.toData(): AchievementType {
 }
 
 /**
- * UPDATED: Maps domain stats to data stats (Set → List for Firestore)
+ * FIXED: Maps domain stats to data stats (Set → List for Firestore)
+ * Now uses uniqueRestaurantsVisitedSet instead of uniqueVisitedRestaurants
  */
 fun UserStatsDomain.toData(): UserStats {
     return UserStats(
@@ -61,7 +62,7 @@ fun UserStatsDomain.toData(): UserStats {
         lastUpdated = lastUpdated,
         uniqueBookmarkedRestaurants = uniqueBookmarkedRestaurants.toList(),
         uniqueVeganRestaurantsRated = uniqueVeganRestaurantsRated.toList(),
-        uniqueRestaurantsWithRatings = uniqueRestaurantsWithRatings.toList()
+        uniqueRestaurantsVisitedSet = uniqueRestaurantsVisitedSet.toList()  // FIXED
     )
 }
 
@@ -100,7 +101,8 @@ fun AchievementType.toDomain(): AchievementTypeDomain {
 }
 
 /**
- * UPDATED: Maps data stats to domain stats (List → Set)
+ * FIXED: Maps data stats to domain stats (List → Set)
+ * Now uses uniqueRestaurantsVisitedSet instead of uniqueVisitedRestaurants
  */
 fun UserStats.toDomain(): UserStatsDomain {
     return UserStatsDomain(
@@ -113,6 +115,6 @@ fun UserStats.toDomain(): UserStatsDomain {
         lastUpdated = lastUpdated,
         uniqueBookmarkedRestaurants = uniqueBookmarkedRestaurants.toSet(),
         uniqueVeganRestaurantsRated = uniqueVeganRestaurantsRated.toSet(),
-        uniqueRestaurantsWithRatings = uniqueRestaurantsWithRatings.toSet()
+        uniqueRestaurantsVisitedSet = uniqueRestaurantsVisitedSet.toSet()  // FIXED
     )
 }

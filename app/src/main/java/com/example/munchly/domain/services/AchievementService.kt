@@ -5,7 +5,12 @@ import com.example.munchly.domain.models.AchievementTypeDomain
 import com.example.munchly.domain.models.UserStatsDomain
 
 /**
- * UPDATED: Achievement logic now uses unique restaurant tracking
+ * FIXED: Achievement logic based on new requirements:
+ * - Culinary Critic: ALL reviews with text (not unique) - 10 total
+ * - Rating Expert: ALL ratings with stars (not unique) - 15 total
+ * - Bookmark Collector: Current unique bookmarked restaurants - 10 unique
+ * - Veggie Lover: Unique vegan restaurants rated - 5 unique
+ * - Foodie Explorer: Unique restaurants visited - 20 unique
  */
 class AchievementService {
 
@@ -29,7 +34,7 @@ class AchievementService {
     }
 
     /**
-     * UPDATED: Uses unique restaurant counts for achievements
+     * FIXED: Uses correct counts for each achievement type
      */
     private fun shouldAwardAchievement(
         type: AchievementTypeDomain,
@@ -37,28 +42,29 @@ class AchievementService {
     ): Boolean {
         return when (type) {
             AchievementTypeDomain.CULINARY_CRITIC ->
+                // ALL reviews with text (not unique)
                 stats.totalReviews >= type.requirement
 
             AchievementTypeDomain.RATING_EXPERT ->
-                // CHANGED: Now uses totalRatings (only ratings with rating > 0)
+                // ALL ratings with stars (not unique)
                 stats.totalRatings >= type.requirement
 
             AchievementTypeDomain.BOOKMARK_COLLECTOR ->
-                // CHANGED: Now uses unique bookmarked restaurants
+                // Current unique bookmarked restaurants
                 stats.uniqueBookmarkedRestaurants.size >= type.requirement
 
             AchievementTypeDomain.VEGGIE_LOVER ->
-                // CHANGED: Now uses unique vegan restaurants rated
+                // Unique vegan restaurants rated
                 stats.uniqueVeganRestaurantsRated.size >= type.requirement
 
             AchievementTypeDomain.FOODIE_EXPLORER ->
-                // Already correct: unique restaurants visited
-                stats.uniqueRestaurantsVisited >= type.requirement
+                // Unique restaurants visited (review OR rating)
+                stats.uniqueRestaurantsVisitedSet.size >= type.requirement
         }
     }
 
     /**
-     * UPDATED: Progress now uses unique counts
+     * FIXED: Progress now uses correct counts
      */
     fun getAchievementProgress(
         type: AchievementTypeDomain,
@@ -66,19 +72,24 @@ class AchievementService {
     ): Pair<Int, Int> {
         val progress = when (type) {
             AchievementTypeDomain.CULINARY_CRITIC ->
+                // ALL reviews with text
                 stats.totalReviews
 
             AchievementTypeDomain.RATING_EXPERT ->
-                stats.totalRatings  // Only ratings > 0
+                // ALL ratings with stars
+                stats.totalRatings
 
             AchievementTypeDomain.BOOKMARK_COLLECTOR ->
-                stats.uniqueBookmarkedRestaurants.size  // Unique restaurants
+                // Current unique bookmarks
+                stats.uniqueBookmarkedRestaurants.size
 
             AchievementTypeDomain.VEGGIE_LOVER ->
-                stats.uniqueVeganRestaurantsRated.size  // Unique vegan restaurants
+                // Unique vegan restaurants rated
+                stats.uniqueVeganRestaurantsRated.size
 
             AchievementTypeDomain.FOODIE_EXPLORER ->
-                stats.uniqueRestaurantsVisited  // Unique restaurants
+                // Unique restaurants visited
+                stats.uniqueRestaurantsVisitedSet.size
         }
 
         return Pair(progress, type.requirement)

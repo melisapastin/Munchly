@@ -31,11 +31,12 @@ data class AchievementDomain(
 }
 
 /**
- * UPDATED: Achievement requirements and descriptions
- * - Rating Expert: 25 → 15 (only ratings)
- * - Bookmark Collector: 15 → 10 (unique restaurants)
- * - Veggie Lover: 10 → 5 (unique vegan restaurants, ratings only)
- * - Foodie Explorer: 20 unique restaurants (reviews + ratings)
+ * FIXED: Achievement requirements and tracking logic
+ * - Culinary Critic: 10 reviews with text (not unique)
+ * - Rating Expert: 15 ratings with stars (not unique)
+ * - Bookmark Collector: 10 unique bookmarked restaurants (current count)
+ * - Veggie Lover: 5 unique vegan restaurants rated
+ * - Foodie Explorer: 20 unique restaurants visited (review OR rating)
  */
 enum class AchievementTypeDomain(
     val title: String,
@@ -45,7 +46,7 @@ enum class AchievementTypeDomain(
 ) {
     CULINARY_CRITIC(
         title = "Culinary Critic",
-        description = "Leave 10 detailed reviews",
+        description = "Leave 10 reviews with comments",
         icon = "🍴",
         requirement = 10
     ),
@@ -53,45 +54,49 @@ enum class AchievementTypeDomain(
         title = "Rating Expert",
         description = "Rate 15 restaurants",
         icon = "⭐",
-        requirement = 15  // CHANGED: 25 → 15, counts ratings only
+        requirement = 15
     ),
     BOOKMARK_COLLECTOR(
         title = "Bookmark Collector",
         description = "Bookmark 10 different restaurants",
         icon = "📖",
-        requirement = 10  // CHANGED: 15 → 10, counts unique restaurants
+        requirement = 10
     ),
     VEGGIE_LOVER(
         title = "Veggie Lover",
         description = "Rate 5 different vegan restaurants",
         icon = "🥗",
-        requirement = 5  // CHANGED: 10 → 5, counts unique vegan restaurants with ratings
+        requirement = 5
     ),
     FOODIE_EXPLORER(
         title = "Foodie Explorer",
         description = "Visit 20 different restaurants",
         icon = "🗺️",
-        requirement = 20  // Counts unique restaurants (reviews OR ratings)
+        requirement = 20
     )
 }
 
 /**
- * UPDATED: User statistics now track UNIQUE restaurants
+ * FIXED: User statistics for achievement tracking
+ * - totalReviews: Count of ALL reviews with text (not unique)
+ * - totalRatings: Count of ALL ratings with stars (not unique)
+ * - uniqueBookmarkedRestaurants: Set of currently bookmarked restaurant IDs
+ * - uniqueVeganRestaurantsRated: Set of unique vegan restaurant IDs that were rated
+ * - uniqueRestaurantsVisited: Set of unique restaurant IDs visited (review OR rating)
  */
 data class UserStatsDomain(
     val userId: String,
-    val totalReviews: Int,  // Reviews with comments
-    val totalRatings: Int,  // Ratings with rating > 0
-    val totalBookmarks: Int,  // DEPRECATED - use uniqueBookmarkedRestaurants instead
-    val veganRestaurantsRated: Int,  // DEPRECATED - use uniqueVeganRestaurantsRated instead
-    val uniqueRestaurantsVisited: Int,  // Count of unique restaurants (derived from Set)
-    val lastUpdated: Long,
+    val totalReviews: Int = 0,  // ALL reviews with text (not unique)
+    val totalRatings: Int = 0,  // ALL ratings with stars (not unique)
+    val totalBookmarks: Int = 0,  // DEPRECATED - use uniqueBookmarkedRestaurants.size
+    val veganRestaurantsRated: Int = 0,  // DEPRECATED - use uniqueVeganRestaurantsRated.size
+    val uniqueRestaurantsVisited: Int = 0,  // DEPRECATED - use uniqueRestaurantsVisited.size
+    val lastUpdated: Long = 0,
 
-    // NEW: Track unique restaurant sets
-    val uniqueBookmarkedRestaurants: Set<String> = emptySet(),  // Set of restaurant IDs
-    val uniqueVeganRestaurantsRated: Set<String> = emptySet(),  // Set of vegan restaurant IDs with ratings
-    val uniqueRestaurantsWithRatings: Set<String> = emptySet(),  // Set of restaurant IDs with ratings
-    val uniqueVisitedRestaurants: Set<String> = emptySet()  // Set of restaurant IDs (reviews OR ratings) - for Foodie Explorer
+    // Sets for tracking unique restaurants
+    val uniqueBookmarkedRestaurants: Set<String> = emptySet(),  // Current bookmarks
+    val uniqueVeganRestaurantsRated: Set<String> = emptySet(),  // Unique vegan restaurants rated
+    val uniqueRestaurantsVisitedSet: Set<String> = emptySet()  // RENAMED: Unique restaurants visited
 )
 
 // ============================================================================

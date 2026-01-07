@@ -31,11 +31,11 @@ data class FoodLoverFeedState(
 )
 
 // ============================================================================
-// VIEWMODEL - FIXED
+// VIEWMODEL - FIXED BOOKMARK TRACKING
 // ============================================================================
 
 /**
- * FIXED: Now calculates average rating from reviews for each restaurant
+ * FIXED: Now updates uniqueBookmarkedRestaurants Set correctly
  */
 class FoodLoverFeedViewModel(
     private val userId: String,
@@ -56,9 +56,6 @@ class FoodLoverFeedViewModel(
         loadBookmarks()
     }
 
-    /**
-     * FIXED: Loads reviews for each restaurant and calculates correct average
-     */
     fun loadRestaurants() {
         _uiState.update { it.copy(isLoading = true, error = null) }
 
@@ -77,13 +74,10 @@ class FoodLoverFeedViewModel(
 
             val restaurants = result.getOrNull() ?: emptyList()
 
-            // FIXED: Load reviews for each restaurant and calculate correct average
             val listItems = restaurants.map { restaurant ->
-                // Load reviews for this restaurant
                 val reviewsResult = getRestaurantReviewsUseCase(restaurant.id, limit = null)
                 val reviews = reviewsResult.getOrNull() ?: emptyList()
 
-                // Calculate correct average (only ratings > 0)
                 val reviewsWithRatings = reviews.filter { it.rating > 0.0 }
                 val averageRating = if (reviewsWithRatings.isNotEmpty()) {
                     reviewsWithRatings.map { it.rating }.average()
@@ -152,6 +146,9 @@ class FoodLoverFeedViewModel(
         }
     }
 
+    /**
+     * FIXED: Now updates uniqueBookmarkedRestaurants Set correctly
+     */
     fun toggleBookmark(restaurantId: String) {
         viewModelScope.launch {
             val result = toggleBookmarkUseCase(userId, restaurantId)
@@ -168,14 +165,19 @@ class FoodLoverFeedViewModel(
                     it.copy(bookmarkedRestaurantIds = updatedBookmarks)
                 }
 
-                if (isBookmarked) {
-                    updateUserStatsUseCase(userId) { stats ->
-                        stats.copy(totalBookmarks = stats.totalBookmarks + 1)
-                    }
-                } else {
-                    updateUserStatsUseCase(userId) { stats ->
+                // Update user stats with Set tracking
+                updateUserStatsUseCase(userId) { stats ->
+                    if (isBookmarked) {
+                        // Add to bookmarked set
                         stats.copy(
-                            totalBookmarks = (stats.totalBookmarks - 1).coerceAtLeast(0)
+                            uniqueBookmarkedRestaurants = stats.uniqueBookmarkedRestaurants + restaurantId,
+                            totalBookmarks = stats.uniqueBookmarkedRestaurants.size + 1
+                        )
+                    } else {
+                        // Remove from bookmarked set
+                        stats.copy(
+                            uniqueBookmarkedRestaurants = stats.uniqueBookmarkedRestaurants - restaurantId,
+                            totalBookmarks = (stats.uniqueBookmarkedRestaurants.size - 1).coerceAtLeast(0)
                         )
                     }
                 }

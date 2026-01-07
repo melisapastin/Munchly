@@ -29,19 +29,19 @@ enum class AchievementType {
 }
 
 /**
- * UPDATED: User statistics with unique restaurant tracking
+ * FIXED: User statistics with corrected field names
  */
 data class UserStats(
     val userId: String = "",
-    val totalReviews: Int = 0,
-    val totalRatings: Int = 0,
+    val totalReviews: Int = 0,  // ALL reviews with text
+    val totalRatings: Int = 0,  // ALL ratings with stars
     val totalBookmarks: Int = 0,  // Deprecated
     val veganRestaurantsRated: Int = 0,  // Deprecated
-    val uniqueRestaurantsVisited: Int = 0,
+    val uniqueRestaurantsVisited: Int = 0,  // Deprecated
     val lastUpdated: Long = 0,
 
-    // NEW: Track unique restaurants as Lists (Firestore doesn't support Set)
+    // Lists for Firestore (converted from Sets in domain)
     val uniqueBookmarkedRestaurants: List<String> = emptyList(),
     val uniqueVeganRestaurantsRated: List<String> = emptyList(),
-    val uniqueRestaurantsWithRatings: List<String> = emptyList()
+    val uniqueRestaurantsVisitedSet: List<String> = emptyList()  // RENAMED to match domain
 )
