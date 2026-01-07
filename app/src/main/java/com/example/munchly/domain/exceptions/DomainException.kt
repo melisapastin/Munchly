@@ -6,8 +6,12 @@ package com.example.munchly.domain.exceptions
 
 /**
  * Base sealed class for all domain-layer exceptions.
- * These exceptions abstract away infrastructure details and represent
- * business-level errors that the UI layer can understand and display.
+ * These exceptions represent business-level errors that the UI layer can
+ * understand and display.
+ *
+ * Exception messages are intended for developers (logging, debugging).
+ * UI layer is responsible for mapping exception types to user-friendly,
+ * localized messages.
  */
 sealed class DomainException(
     message: String,
@@ -20,7 +24,7 @@ sealed class DomainException(
     data class NetworkError(
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = "Network connection failed. Please check your connection.",
+        message = "Network error occurred",
         cause = originalCause
     )
 
@@ -31,7 +35,7 @@ sealed class DomainException(
         val resource: String,
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = "Permission denied: $resource",
+        message = "Permission denied for resource: $resource",
         cause = originalCause
     )
 
@@ -42,7 +46,7 @@ sealed class DomainException(
         val resource: String,
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = "$resource not found",
+        message = "Resource not found: $resource",
         cause = originalCause
     )
 
@@ -52,7 +56,7 @@ sealed class DomainException(
     data class ValidationError(
         val reason: String
     ) : DomainException(
-        message = reason,
+        message = "Validation failed: $reason",
         cause = null
     )
 
@@ -63,7 +67,7 @@ sealed class DomainException(
         val reason: String,
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = reason,
+        message = "Invalid data: $reason",
         cause = originalCause
     )
 
@@ -74,7 +78,7 @@ sealed class DomainException(
         val operation: String,
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = "$operation failed",
+        message = "Operation failed: $operation",
         cause = originalCause
     )
 
@@ -85,7 +89,7 @@ sealed class DomainException(
         val reason: String,
         private val originalCause: Throwable? = null
     ) : DomainException(
-        message = reason,
+        message = "Unknown error: $reason",
         cause = originalCause
     )
 }

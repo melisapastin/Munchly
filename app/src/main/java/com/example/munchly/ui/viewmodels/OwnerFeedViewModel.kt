@@ -9,6 +9,8 @@ import com.example.munchly.domain.models.ReviewDomain
 import com.example.munchly.domain.usecases.GetRecentReviewsUseCase
 import com.example.munchly.domain.usecases.GetRestaurantByOwnerIdUseCase
 import com.example.munchly.domain.usecases.GetRestaurantStatsUseCase
+import com.example.munchly.domain.usecases.GetRestaurantReviewsUseCase
+import com.example.munchly.domain.usecases.CountRestaurantBookmarksUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,31 +22,35 @@ import kotlinx.coroutines.launch
 // ============================================================================
 
 /**
- * UI state for restaurant owner feed/dashboard.
- * Uses domain models exclusively.
+ * FIXED: Now includes real bookmark count from database
  */
 data class OwnerFeedState(
     val isLoading: Boolean = true,
     val restaurant: RestaurantDomain? = null,
     val stats: RestaurantStatsDomain? = null,
     val recentReviews: List<ReviewDomain> = emptyList(),
+    val calculatedAverageRating: Double = 0.0,
+    val calculatedTotalRatings: Int = 0,
+    val calculatedTotalReviews: Int = 0,
+    val actualBookmarkCount: Int = 0,  // ADDED: Real count from database
     val error: String? = null,
     val hasRestaurant: Boolean = false
 )
 
 // ============================================================================
-// VIEWMODEL
+// VIEWMODEL - FIXED
 // ============================================================================
 
 /**
- * ViewModel for restaurant owner dashboard.
- * Loads restaurant data, statistics, and recent reviews.
+ * FIXED: Now counts actual bookmarks from database instead of using cached stats
  */
 class OwnerFeedViewModel(
     private val ownerId: String,
     private val getRestaurantByOwnerUseCase: GetRestaurantByOwnerIdUseCase,
     private val getRestaurantStatsUseCase: GetRestaurantStatsUseCase,
-    private val getRecentReviewsUseCase: GetRecentReviewsUseCase
+    private val getRecentReviewsUseCase: GetRecentReviewsUseCase,
+    private val getRestaurantReviewsUseCase: GetRestaurantReviewsUseCase,
+    private val countRestaurantBookmarksUseCase: CountRestaurantBookmarksUseCase  // ADDED
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OwnerFeedState())
@@ -55,8 +61,7 @@ class OwnerFeedViewModel(
     }
 
     /**
-     * Loads all restaurant data including stats and reviews.
-     * Public method to allow manual refresh.
+     * FIXED: Now loads real bookmark count from database
      */
     fun loadRestaurantData() {
         _uiState.update { it.copy(isLoading = true, error = null) }
@@ -87,21 +92,41 @@ class OwnerFeedViewModel(
                 return@launch
             }
 
-            // Load stats and reviews in parallel
+            // Load stats (for views only, bookmarks will be counted separately)
             val statsResult = getRestaurantStatsUseCase(restaurant.id)
-            val reviewsResult = getRecentReviewsUseCase(restaurant.id, limit = 5)
-
-            // Note: We don't fail the entire screen if stats/reviews fail
-            // These are supplementary data - show what we can
             val stats = statsResult.getOrNull()
-            val reviews = reviewsResult.getOrNull() ?: emptyList()
+
+            // Load ALL reviews to calculate correct average
+            val reviewsResult = getRestaurantReviewsUseCase(restaurant.id, limit = null)
+            val allReviews = reviewsResult.getOrNull() ?: emptyList()
+
+            // Calculate correct average (only ratings > 0)
+            val reviewsWithRatings = allReviews.filter { it.rating > 0.0 }
+            val calculatedAverageRating = if (reviewsWithRatings.isNotEmpty()) {
+                reviewsWithRatings.map { it.rating }.average()
+            } else {
+                0.0
+            }
+
+            // Count reviews with comments separately
+            val reviewsWithComments = allReviews.filter { it.comment.isNotBlank() }
+            val calculatedTotalReviews = reviewsWithComments.size
+            val calculatedTotalRatings = reviewsWithRatings.size
+
+            // ADDED: Count actual bookmarks from database
+            val bookmarkCountResult = countRestaurantBookmarksUseCase(restaurant.id)
+            val actualBookmarkCount = bookmarkCountResult.getOrNull() ?: 0
 
             _uiState.update {
                 it.copy(
                     isLoading = false,
                     restaurant = restaurant,
                     stats = stats,
-                    recentReviews = reviews,
+                    recentReviews = allReviews,
+                    calculatedAverageRating = calculatedAverageRating,
+                    calculatedTotalRatings = calculatedTotalRatings,
+                    calculatedTotalReviews = calculatedTotalReviews,
+                    actualBookmarkCount = actualBookmarkCount,  // ADDED
                     hasRestaurant = true,
                     error = null
                 )
@@ -109,9 +134,6 @@ class OwnerFeedViewModel(
         }
     }
 
-    /**
-     * Maps domain exceptions to user-friendly error messages.
-     */
     private fun mapErrorToMessage(exception: Throwable?): String {
         return when (exception) {
             is DomainException.NetworkError ->

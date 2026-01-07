@@ -7,10 +7,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,7 +30,7 @@ import com.example.munchly.ui.theme.MunchlyColors
 
 /**
  * Reusable text field component with validation support.
- * Supports both regular text and password fields.
+ * Supports both regular text and password fields with visibility toggle.
  */
 @Composable
 fun ValidationTextField(
@@ -37,6 +46,9 @@ fun ValidationTextField(
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else 5
 ) {
+    // State for password visibility toggle
+    var passwordVisible by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
@@ -51,10 +63,29 @@ fun ValidationTextField(
             isError = isError || errorMessage != null,
             singleLine = singleLine,
             maxLines = maxLines,
-            visualTransformation = if (isPassword) {
+            visualTransformation = if (isPassword && !passwordVisible) {
                 PasswordVisualTransformation()
             } else {
                 VisualTransformation.None
+            },
+            trailingIcon = {
+                if (isPassword) {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) {
+                                Icons.Default.Visibility
+                            } else {
+                                Icons.Default.VisibilityOff
+                            },
+                            contentDescription = if (passwordVisible) {
+                                "Hide password"
+                            } else {
+                                "Show password"
+                            },
+                            tint = MunchlyColors.textSecondary
+                        )
+                    }
+                }
             },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -63,7 +94,6 @@ fun ValidationTextField(
                 errorBorderColor = MunchlyColors.error,
                 focusedTextColor = MunchlyColors.textPrimary,
                 unfocusedTextColor = MunchlyColors.textPrimary,
-
                 focusedContainerColor = MunchlyColors.surface,
                 unfocusedContainerColor = MunchlyColors.surface,
                 disabledContainerColor = MunchlyColors.surface,

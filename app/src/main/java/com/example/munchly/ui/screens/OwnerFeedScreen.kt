@@ -54,8 +54,7 @@ import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.OwnerFeedViewModel
 
 /**
- * Restaurant owner dashboard screen.
- * Displays restaurant info, statistics, and recent activity.
+ * FIXED: Now displays calculated average rating instead of stats average
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,7 +123,7 @@ fun OwnerFeedScreen(
 }
 
 /**
- * Main dashboard content with restaurant info and stats.
+ * FIXED: Now uses calculated values from state
  */
 @Composable
 private fun RestaurantDashboard(
@@ -146,16 +145,17 @@ private fun RestaurantDashboard(
 
         item {
             QuickStatsOverview(
-                averageRating = state.stats?.averageRating ?: 0.0,
-                totalRatings = state.stats?.totalRatings ?: 0,
-                totalReviews = state.stats?.totalReviews ?: 0,
-                totalBookmarks = state.stats?.totalBookmarks ?: 0,
+                averageRating = state.calculatedAverageRating,
+                totalRatings = state.calculatedTotalRatings,
+                totalReviews = state.calculatedTotalReviews,
+                totalBookmarks = state.actualBookmarkCount,  // FIXED: Use real count from database
                 monthlyViews = state.stats?.monthlyViews ?: 0,
                 onRatingsClick = onNavigateToRatings,
                 onReviewsClick = onNavigateToReviews
             )
         }
 
+        /*
         if (state.recentReviews.isNotEmpty()) {
             item {
                 RecentActivitySummary(
@@ -164,12 +164,10 @@ private fun RestaurantDashboard(
                 )
             }
         }
+         */
     }
 }
 
-/**
- * Restaurant header card with name and description.
- */
 @Composable
 private fun RestaurantHeader(
     restaurantName: String,
@@ -246,9 +244,6 @@ private fun RestaurantHeader(
     }
 }
 
-/**
- * Statistics overview card with clickable stat items.
- */
 @Composable
 private fun QuickStatsOverview(
     averageRating: Double,
@@ -329,9 +324,6 @@ private fun QuickStatsOverview(
     }
 }
 
-/**
- * Individual stat item card.
- */
 @Composable
 private fun StatItem(
     icon: ImageVector,
@@ -379,9 +371,7 @@ private fun StatItem(
     }
 }
 
-/**
- * Recent activity summary card.
- */
+/*
 @Composable
 private fun RecentActivitySummary(
     recentReviewsCount: Int,
@@ -441,10 +431,8 @@ private fun RecentActivitySummary(
         }
     }
 }
-
-/**
- * Empty state when no restaurant exists.
  */
+
 @Composable
 private fun EmptyRestaurantState(modifier: Modifier = Modifier) {
     Column(
@@ -474,9 +462,6 @@ private fun EmptyRestaurantState(modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * Error state with retry button.
- */
 @Composable
 private fun ErrorState(
     message: String,

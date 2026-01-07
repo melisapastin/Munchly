@@ -47,8 +47,7 @@ import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.OwnerFeedViewModel
 
 /**
- * Screen showing all reviews for a restaurant.
- * Displays total review count and list of all reviews with comments.
+ * FIXED: Now uses calculated average rating from ViewModel state
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +63,7 @@ fun AllReviewsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "All Reviews",
+                        text = "Reviews & Ratings",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -92,33 +91,44 @@ fun AllReviewsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Summary Card - FIXED: Uses calculated values
             item {
-                ReviewsSummaryCard(
-                    totalReviews = state.stats?.totalReviews ?: 0,
-                    averageRating = state.stats?.averageRating ?: 0.0
+                ReviewSummaryCard(
+                    averageRating = state.calculatedAverageRating,
+                    totalReviews = state.calculatedTotalReviews,
+                    totalRatings = state.calculatedTotalRatings
                 )
             }
 
-            items(state.recentReviews) { review ->
-                ReviewItemCard(review = review)
-            }
-
+            // Reviews/Ratings List
             if (state.recentReviews.isEmpty()) {
                 item {
                     EmptyReviewsState()
                 }
+            } else {
+                items(
+                    items = state.recentReviews,
+                    key = { it.id }
+                ) { review ->
+                    ReviewItemCard(review = review)
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
 
 /**
- * Summary card showing total review count.
+ * FIXED: Now receives calculated values instead of using stats
  */
 @Composable
-private fun ReviewsSummaryCard(
+private fun ReviewSummaryCard(
+    averageRating: Double,
     totalReviews: Int,
-    averageRating: Double
+    totalRatings: Int
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -133,7 +143,7 @@ private fun ReviewsSummaryCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Total Reviews",
+                text = "Average Rating",
                 fontSize = 14.sp,
                 color = MunchlyColors.textSecondary,
                 fontWeight = FontWeight.Medium
@@ -142,23 +152,27 @@ private fun ReviewsSummaryCard(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = totalReviews.toString(),
+                    text = if (averageRating > 0) {
+                        String.format("%.1f", averageRating)
+                    } else {
+                        "N/A"
+                    },
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
                     color = MunchlyColors.textPrimary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Default.RateReview,
+                    imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = Color(0xFF66BB6A),
+                    tint = Color(0xFFFFA726),
                     modifier = Modifier.size(40.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Average rating: ${if (averageRating > 0) String.format("%.1f", averageRating) else "N/A"} ★",
+                text = "$totalRatings rating${if (totalRatings != 1) "s" else ""} • $totalReviews review${if (totalReviews != 1) "s" else ""}",
                 fontSize = 12.sp,
                 color = MunchlyColors.textSecondary
             )
@@ -166,9 +180,6 @@ private fun ReviewsSummaryCard(
     }
 }
 
-/**
- * Individual review item card with full comment.
- */
 @Composable
 private fun ReviewItemCard(review: ReviewDomain) {
     Card(
@@ -186,6 +197,7 @@ private fun ReviewItemCard(review: ReviewDomain) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // User Avatar
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -218,21 +230,25 @@ private fun ReviewItemCard(review: ReviewDomain) {
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    repeat(review.rating.toInt()) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color(0xFFFFA726),
-                            modifier = Modifier.size(20.dp)
-                        )
+                // Rating Stars (if provided)
+                if (review.rating > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        repeat(review.rating.toInt()) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFA726),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
 
+            // Comment (if provided)
             if (review.comment.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -246,9 +262,6 @@ private fun ReviewItemCard(review: ReviewDomain) {
     }
 }
 
-/**
- * Empty state when no reviews exist.
- */
 @Composable
 private fun EmptyReviewsState() {
     Card(
@@ -278,7 +291,7 @@ private fun EmptyReviewsState() {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Customer reviews will appear here",
+                text = "Customer reviews and ratings will appear here",
                 fontSize = 14.sp,
                 color = MunchlyColors.textSecondary,
                 textAlign = TextAlign.Center

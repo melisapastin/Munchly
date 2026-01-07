@@ -5,21 +5,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.munchly.domain.models.UserTypeDomain
 import com.example.munchly.ui.screens.LoginScreen
 import com.example.munchly.ui.screens.MainScreen
 import com.example.munchly.ui.screens.RegisterCredentialsScreen
 import com.example.munchly.ui.screens.RegisterUserTypeScreen
-import com.example.munchly.data.models.UserType
 import com.example.munchly.ui.theme.MunchlyTheme
 
 /**
  * Main activity for Munchly app.
  * Handles top-level navigation between auth screens and main app.
+ *
+ * UPDATED: Uses domain models (UserTypeDomain) instead of data models (UserType).
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,10 +97,12 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val userTypeString = backStackEntry.arguments?.getString("userType")
                             ?: "FOOD_LOVER"
+
+                        // Parse domain enum instead of data enum
                         val userType = try {
-                            UserType.valueOf(userTypeString)
+                            UserTypeDomain.valueOf(userTypeString)
                         } catch (e: IllegalArgumentException) {
-                            UserType.FOOD_LOVER
+                            UserTypeDomain.FOOD_LOVER
                         }
 
                         RegisterCredentialsScreen(
@@ -107,12 +113,7 @@ class MainActivity : ComponentActivity() {
 
                     // Main app screen
                     composable(
-                        route = "main/{userType}/{userId}/{username}",
-                        arguments = listOf(
-                            navArgument("userType") { type = NavType.StringType },
-                            navArgument("userId") { type = NavType.StringType },
-                            navArgument("username") { type = NavType.StringType }
-                        ),
+                        route = "main",
                         enterTransition = {
                             slideIntoContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -125,24 +126,25 @@ class MainActivity : ComponentActivity() {
                                 animationSpec = tween(300)
                             )
                         }
-                    ) { backStackEntry ->
-                        val userTypeString = backStackEntry.arguments?.getString("userType")
-                            ?: "FOOD_LOVER"
-                        val userId = backStackEntry.arguments?.getString("userId") ?: ""
-                        val username = backStackEntry.arguments?.getString("username") ?: ""
+                    ) {
+                        val app = LocalContext.current.applicationContext as MunchlyApplication
+                        val user = app.currentUser
 
-                        val userType = try {
-                            UserType.valueOf(userTypeString)
-                        } catch (e: IllegalArgumentException) {
-                            UserType.FOOD_LOVER
+                        if (user != null) {
+                            MainScreen(
+                                userType = user.userType,
+                                username = user.username,
+                                userId = user.uid,
+                                navController = navController
+                            )
+                        } else {
+                            // No user found - navigate back to login
+                            LaunchedEffect(Unit) {
+                                navController.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
                         }
-
-                        MainScreen(
-                            userType = userType,
-                            username = username,
-                            userId = userId,
-                            navController = navController
-                        )
                     }
                 }
             }

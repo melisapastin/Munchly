@@ -60,6 +60,20 @@ class RestaurantRepositoryImpl(
             remoteDataSource.createRestaurant(restaurant.toData()).toDomain()
         }
 
+    override suspend fun incrementRestaurantStats(
+        restaurantId: String,
+        newRating: Double,
+        hasComment: Boolean
+    ): Result<Unit> =
+        safeCall(resourceName = "RestaurantStats") {
+            remoteDataSource.incrementRestaurantStats(restaurantId, newRating, hasComment)
+        }
+
+    override suspend fun incrementRestaurantViews(restaurantId: String): Result<Unit> =
+        safeCall(resourceName = "RestaurantStats") {
+            remoteDataSource.incrementRestaurantViews(restaurantId)
+        }
+
     // ========================================================================
     // EXCEPTION MAPPING
     // ========================================================================

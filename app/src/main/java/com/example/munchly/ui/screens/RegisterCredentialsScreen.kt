@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.munchly.MunchlyApplication
-import com.example.munchly.data.models.UserType
+import com.example.munchly.domain.models.UserTypeDomain
 import com.example.munchly.ui.components.AppLogo
 import com.example.munchly.ui.components.AppTitle
 import com.example.munchly.ui.components.AuthButton
@@ -35,19 +35,28 @@ import com.example.munchly.ui.components.ValidationTextField
 import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.RegisterCredentialsViewModel
 
+/**
+ * Screen for entering registration credentials.
+ * Second step of the registration flow after user type selection.
+ *
+ * Collects username, email, and password from the user and creates
+ * a new account through the RegisterCredentialsViewModel.
+ */
 @Composable
 fun RegisterCredentialsScreen(
     navController: NavController,
-    userType: UserType
+    userType: UserTypeDomain
 ) {
     val app = LocalContext.current.applicationContext as MunchlyApplication
     val viewModel = remember { RegisterCredentialsViewModel(app.registerUseCase) }
     val state by viewModel.uiState.collectAsState()
 
+    // Navigate to main screen on successful registration
     LaunchedEffect(state.registrationSuccess) {
         if (state.registrationSuccess) {
             state.user?.let { user ->
-                navController.navigate("main/${user.userType.name}/${user.username}") {
+                app.setCurrentUser(user)
+                navController.navigate("main") {
                     popUpTo("register_user_type") { inclusive = true }
                 }
             }
@@ -70,7 +79,7 @@ fun RegisterCredentialsScreen(
             Spacer(modifier = Modifier.height(24.dp))
             AppTitle(
                 title = "Create Account",
-                subtitle = "Join as ${if (userType == UserType.RESTAURANT_OWNER) "Restaurant Owner" else "Food Lover"}"
+                subtitle = "Join as ${userType.getDisplayName()}"
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -90,8 +99,8 @@ fun RegisterCredentialsScreen(
                         value = state.username,
                         onValueChange = viewModel::onUsernameChange,
                         placeholder = "Choose a username",
-                        isError = state.usernameError != null,
-                        errorMessage = state.usernameError,
+                        isError = false,
+                        errorMessage = null,
                         imeAction = ImeAction.Next
                     )
 
@@ -103,8 +112,8 @@ fun RegisterCredentialsScreen(
                         value = state.email,
                         onValueChange = viewModel::onEmailChange,
                         placeholder = "your@email.com",
-                        isError = state.emailError != null,
-                        errorMessage = state.emailError,
+                        isError = false,
+                        errorMessage = null,
                         imeAction = ImeAction.Next
                     )
 
@@ -117,8 +126,8 @@ fun RegisterCredentialsScreen(
                         onValueChange = viewModel::onPasswordChange,
                         placeholder = "········",
                         isPassword = true,
-                        isError = state.passwordError != null,
-                        errorMessage = state.passwordError,
+                        isError = false,
+                        errorMessage = null,
                         imeAction = ImeAction.Done,
                         onImeAction = { viewModel.register(userType) }
                     )

@@ -75,6 +75,21 @@ fun Map<String, DayScheduleDomain>.toFirestoreFormat(): Map<String, Map<String, 
     }
 }
 
+/**
+ * Converts domain review to data DTO for Firebase persistence.
+ */
+fun ReviewDomain.toData(): Review {
+    return Review(
+        id = id,
+        restaurantId = restaurantId,
+        userId = userId,
+        userName = userName,
+        rating = rating,
+        comment = comment,
+        createdAt = createdAt
+    )
+}
+
 // ============================================================================
 // DATA → DOMAIN (from persistence)
 // ============================================================================

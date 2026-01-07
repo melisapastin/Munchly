@@ -98,9 +98,9 @@ fun AllRatingsScreen(
                 )
             }
 
-            items(state.recentReviews) { review ->
-                RatingItemCard(review = review)
-            }
+            //items(state. coderecentReviews) { review ->
+            //    RatingItemCard(review = review)
+            //}
 
             if (state.recentReviews.isEmpty()) {
                 item {

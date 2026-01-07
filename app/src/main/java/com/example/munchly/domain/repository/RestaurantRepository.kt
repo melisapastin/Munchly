@@ -46,4 +46,14 @@ interface RestaurantRepository {
      * @return Created restaurant domain model with generated ID
      */
     suspend fun createRestaurant(restaurant: RestaurantDomain): Result<RestaurantDomain>
+
+    /**
+     * Increments restaurant statistics after a review.
+     */
+    suspend fun incrementRestaurantStats(restaurantId: String, newRating: Double, hasComment: Boolean): Result<Unit>
+
+    /**
+     * Increments the view count for a restaurant.
+     */
+    suspend fun incrementRestaurantViews(restaurantId: String): Result<Unit>
 }

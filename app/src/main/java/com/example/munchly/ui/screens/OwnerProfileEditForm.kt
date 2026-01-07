@@ -225,6 +225,38 @@ fun OwnerProfileEditForm(
             }
         }
 
+        // Upload Progress Indicator
+        if (state.isUploadingFile && state.uploadProgress != null) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MunchlyColors.primaryLight
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            color = MunchlyColors.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = state.uploadProgress,
+                            fontSize = 14.sp,
+                            color = MunchlyColors.textPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
         // Action Buttons
         item {
             Spacer(modifier = Modifier.height(16.dp))

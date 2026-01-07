@@ -34,16 +34,22 @@ import com.example.munchly.ui.components.ValidationTextField
 import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.LoginViewModel
 
+/**
+ * Login screen for existing users.
+ * Uses domain models (UserDomain) exclusively.
+ */
 @Composable
 fun LoginScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as MunchlyApplication
     val viewModel = remember { LoginViewModel(app.loginUseCase) }
     val state by viewModel.uiState.collectAsState()
 
+    // Navigate to main screen on successful login
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
             state.user?.let { user ->
-                navController.navigate("main/${user.userType.name}/${user.uid}/${user.username}") {
+                app.setCurrentUser(user)
+                navController.navigate("main") {
                     popUpTo("login") { inclusive = true }
                 }
             }

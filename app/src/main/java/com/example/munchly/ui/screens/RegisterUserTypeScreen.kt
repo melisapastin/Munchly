@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.munchly.data.models.UserType
+import com.example.munchly.domain.models.UserTypeDomain
 import com.example.munchly.ui.components.AppLogo
 import com.example.munchly.ui.components.AppTitle
 import com.example.munchly.ui.components.AuthButton
@@ -25,6 +25,14 @@ import com.example.munchly.ui.components.UserTypeCard
 import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.RegisterUserTypeViewModel
 
+/**
+ * Screen for selecting user type during registration.
+ * First step of the registration flow.
+ *
+ * Users choose between Food Lover (discover restaurants) and
+ * Restaurant Owner (manage restaurant) before proceeding to
+ * enter their credentials.
+ */
 @Composable
 fun RegisterUserTypeScreen(
     navController: NavController
@@ -78,30 +86,36 @@ fun RegisterUserTypeScreen(
     }
 }
 
+/**
+ * Section containing user type selection cards.
+ * Displays two cards for Food Lover and Restaurant Owner options.
+ */
 @Composable
 private fun UserTypeSelectionSection(
-    selectedUserType: UserType?,
-    onUserTypeSelected: (UserType) -> Unit
+    selectedUserType: UserTypeDomain?,
+    onUserTypeSelected: (UserTypeDomain) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val foodLoverType = UserTypeDomain.FOOD_LOVER
         UserTypeCard(
-            title = "Food Lover",
-            description = "Discover and bookmark amazing restaurants",
-            isSelected = selectedUserType == UserType.FOOD_LOVER,
-            onClick = { onUserTypeSelected(UserType.FOOD_LOVER) },
+            title = foodLoverType.getDisplayName(),
+            description = foodLoverType.getDescription(),
+            isSelected = selectedUserType == UserTypeDomain.FOOD_LOVER,
+            onClick = { onUserTypeSelected(UserTypeDomain.FOOD_LOVER) },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val restaurantOwnerType = UserTypeDomain.RESTAURANT_OWNER
         UserTypeCard(
-            title = "Restaurant Owner",
-            description = "Showcase and manage your restaurant",
-            isSelected = selectedUserType == UserType.RESTAURANT_OWNER,
-            onClick = { onUserTypeSelected(UserType.RESTAURANT_OWNER) },
+            title = restaurantOwnerType.getDisplayName(),
+            description = restaurantOwnerType.getDescription(),
+            isSelected = selectedUserType == UserTypeDomain.RESTAURANT_OWNER,
+            onClick = { onUserTypeSelected(UserTypeDomain.RESTAURANT_OWNER) },
             modifier = Modifier.fillMaxWidth()
         )
     }

@@ -13,6 +13,8 @@ import com.example.munchly.domain.services.RestaurantValidator
 import com.example.munchly.domain.usecases.CreateRestaurantUseCase
 import com.example.munchly.domain.usecases.GetRestaurantByOwnerIdUseCase
 import com.example.munchly.domain.usecases.UpdateRestaurantUseCase
+import com.example.munchly.domain.usecases.UploadMenuPdfUseCase
+import com.example.munchly.domain.usecases.UploadRestaurantImageUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,16 +25,13 @@ import kotlinx.coroutines.launch
 // STATE
 // ============================================================================
 
-/**
- * UI state for restaurant owner profile.
- * Simplified and focused on actual UI concerns.
- */
 data class OwnerProfileState(
     // Screen state
     val isLoading: Boolean = true,
     val hasRestaurant: Boolean = false,
     val isEditing: Boolean = false,
     val isSaving: Boolean = false,
+    val isUploadingFile: Boolean = false,  // ADDED
 
     // Current restaurant data (for display mode)
     val restaurant: RestaurantDomain? = null,
@@ -60,12 +59,10 @@ data class OwnerProfileState(
     // UI feedback
     val error: String? = null,
     val successMessage: String? = null,
-    val showTagDialog: Boolean = false
+    val showTagDialog: Boolean = false,
+    val uploadProgress: String? = null  // ADDED: For showing upload status
 )
 
-/**
- * Creates default opening hours schedule.
- */
 private fun createDefaultSchedule(): Map<String, DayScheduleDomain> {
     return DayOfWeek.entries.associate {
         it.name to DayScheduleDomain(
@@ -77,19 +74,17 @@ private fun createDefaultSchedule(): Map<String, DayScheduleDomain> {
 }
 
 // ============================================================================
-// VIEWMODEL
+// VIEWMODEL - WITH FILE UPLOAD SUPPORT
 // ============================================================================
 
-/**
- * ViewModel for restaurant owner profile management.
- * Handles both viewing and editing restaurant information.
- */
 class OwnerProfileViewModel(
     private val ownerId: String,
     val username: String,
     private val getRestaurantByOwnerUseCase: GetRestaurantByOwnerIdUseCase,
     private val updateRestaurantUseCase: UpdateRestaurantUseCase,
-    private val createRestaurantUseCase: CreateRestaurantUseCase
+    private val createRestaurantUseCase: CreateRestaurantUseCase,
+    private val uploadMenuPdfUseCase: UploadMenuPdfUseCase,  // ADDED
+    private val uploadRestaurantImageUseCase: UploadRestaurantImageUseCase  // ADDED
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OwnerProfileState())
@@ -103,9 +98,6 @@ class OwnerProfileViewModel(
     // DATA LOADING
     // ========================================================================
 
-    /**
-     * Loads restaurant data from repository.
-     */
     fun loadRestaurant() {
         _uiState.update { it.copy(isLoading = true, error = null) }
 
@@ -129,7 +121,6 @@ class OwnerProfileViewModel(
                     isLoading = false,
                     restaurant = restaurant,
                     hasRestaurant = restaurant != null,
-                    // Populate form fields with existing data
                     name = restaurant?.name ?: "",
                     description = restaurant?.description ?: "",
                     tags = restaurant?.tags ?: emptyList(),
@@ -148,22 +139,15 @@ class OwnerProfileViewModel(
     // EDIT MODE MANAGEMENT
     // ========================================================================
 
-    /**
-     * Enters edit mode.
-     */
     fun startEditing() {
         _uiState.update { it.copy(isEditing = true) }
     }
 
-    /**
-     * Cancels editing and restores original data.
-     */
     fun cancelEditing() {
         val restaurant = _uiState.value.restaurant
         _uiState.update {
             it.copy(
                 isEditing = false,
-                // Restore original data
                 name = restaurant?.name ?: "",
                 description = restaurant?.description ?: "",
                 tags = restaurant?.tags ?: emptyList(),
@@ -174,7 +158,6 @@ class OwnerProfileViewModel(
                 menuPdfUrl = restaurant?.menuPdfUrl ?: "",
                 menuPdfUri = null,
                 images = restaurant?.images ?: emptyList(),
-                // Clear errors
                 nameError = null,
                 descriptionError = null,
                 tagsError = null,
@@ -258,13 +241,60 @@ class OwnerProfileViewModel(
     }
 
     // ========================================================================
-    // FILE MANAGEMENT
+    // FILE MANAGEMENT - UPDATED WITH ACTUAL UPLOAD
     // ========================================================================
 
+    /**
+     * UPDATED: Now actually uploads the PDF to Firebase Storage
+     */
     fun onMenuPdfSelected(uri: Uri) {
-        // TODO: Upload to Firebase Storage and get URL
-        // For now, just store the URI
-        _uiState.update { it.copy(menuPdfUri = uri) }
+        _uiState.update {
+            it.copy(
+                isUploadingFile = true,
+                uploadProgress = "Uploading menu PDF...",
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            // Need restaurant ID - if creating new restaurant, we'll upload during save
+            val restaurantId = _uiState.value.restaurant?.id
+
+            if (restaurantId != null) {
+                // Restaurant exists - upload immediately
+                val result = uploadMenuPdfUseCase(restaurantId, uri)
+
+                if (result.isSuccess) {
+                    val downloadUrl = result.getOrNull()!!
+                    _uiState.update {
+                        it.copy(
+                            menuPdfUrl = downloadUrl,
+                            menuPdfUri = null,
+                            isUploadingFile = false,
+                            uploadProgress = null,
+                            successMessage = "Menu PDF uploaded successfully"
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isUploadingFile = false,
+                            uploadProgress = null,
+                            error = mapErrorToMessage(result.exceptionOrNull())
+                        )
+                    }
+                }
+            } else {
+                // Restaurant doesn't exist yet - store URI for later upload during save
+                _uiState.update {
+                    it.copy(
+                        menuPdfUri = uri,
+                        isUploadingFile = false,
+                        uploadProgress = null
+                    )
+                }
+            }
+        }
     }
 
     fun removeMenuPdf() {
@@ -276,9 +306,56 @@ class OwnerProfileViewModel(
         }
     }
 
+    /**
+     * UPDATED: Now actually uploads the image to Firebase Storage
+     */
     fun onImageSelected(uri: Uri) {
-        // TODO: Upload to Firebase Storage and get URL
-        // For now, this feature is not implemented
+        _uiState.update {
+            it.copy(
+                isUploadingFile = true,
+                uploadProgress = "Uploading image...",
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            // Need restaurant ID - if creating new restaurant, we'll upload during save
+            val restaurantId = _uiState.value.restaurant?.id
+
+            if (restaurantId != null) {
+                // Restaurant exists - upload immediately
+                val result = uploadRestaurantImageUseCase(restaurantId, uri)
+
+                if (result.isSuccess) {
+                    val downloadUrl = result.getOrNull()!!
+                    _uiState.update {
+                        it.copy(
+                            images = it.images + downloadUrl,
+                            isUploadingFile = false,
+                            uploadProgress = null,
+                            successMessage = "Image uploaded successfully"
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isUploadingFile = false,
+                            uploadProgress = null,
+                            error = mapErrorToMessage(result.exceptionOrNull())
+                        )
+                    }
+                }
+            } else {
+                // Restaurant doesn't exist yet - show error
+                _uiState.update {
+                    it.copy(
+                        isUploadingFile = false,
+                        uploadProgress = null,
+                        error = "Please create your restaurant profile first before uploading images"
+                    )
+                }
+            }
+        }
     }
 
     fun removeImage(imageUrl: String) {
@@ -288,11 +365,11 @@ class OwnerProfileViewModel(
     }
 
     // ========================================================================
-    // SAVE OPERATION
+    // SAVE OPERATION - UPDATED TO HANDLE PENDING PDF UPLOAD
     // ========================================================================
 
     /**
-     * Saves restaurant data (create or update).
+     * UPDATED: Now uploads pending PDF during restaurant creation
      */
     fun saveRestaurant() {
         val currentState = _uiState.value
@@ -300,7 +377,11 @@ class OwnerProfileViewModel(
         _uiState.update { it.copy(isSaving = true, error = null) }
 
         viewModelScope.launch {
-            // Create input model from current form state
+            var menuPdfUrl = currentState.menuPdfUrl
+
+            // If creating new restaurant and there's a pending PDF, we need to upload it first
+            // But we need the restaurant ID, so we'll create without PDF first, then update
+
             val input = RestaurantInput(
                 ownerId = ownerId,
                 name = currentState.name,
@@ -310,35 +391,70 @@ class OwnerProfileViewModel(
                 address = currentState.address,
                 phone = currentState.phone,
                 openingHours = currentState.openingHours,
-                menuPdfUrl = currentState.menuPdfUrl,
+                menuPdfUrl = menuPdfUrl,
                 images = currentState.images
             )
 
-            // Call appropriate use case
             val result = if (currentState.hasRestaurant && currentState.restaurant != null) {
+                // Updating existing restaurant
                 updateRestaurantUseCase(
                     restaurantId = currentState.restaurant.id,
                     input = input,
                     createdAt = currentState.restaurant.createdAt
                 )
             } else {
+                // Creating new restaurant
                 createRestaurantUseCase(input)
             }
 
             _uiState.update { it.copy(isSaving = false) }
 
-            // Handle result
             if (result.isSuccess) {
                 val savedRestaurant = result.getOrThrow()
-                _uiState.update {
-                    it.copy(
-                        restaurant = savedRestaurant,
-                        hasRestaurant = true,
-                        isEditing = false,
-                        menuPdfUri = null,
-                        successMessage = "Restaurant saved successfully",
-                        error = null
-                    )
+
+                // If there's a pending PDF URI, upload it now
+                if (currentState.menuPdfUri != null) {
+                    _uiState.update { it.copy(uploadProgress = "Uploading menu PDF...") }
+
+                    val pdfResult = uploadMenuPdfUseCase(savedRestaurant.id, currentState.menuPdfUri)
+
+                    if (pdfResult.isSuccess) {
+                        val pdfUrl = pdfResult.getOrNull()!!
+
+                        // Update restaurant with PDF URL
+                        val updatedInput = input.copy(menuPdfUrl = pdfUrl)
+                        val updateResult = updateRestaurantUseCase(
+                            restaurantId = savedRestaurant.id,
+                            input = updatedInput,
+                            createdAt = savedRestaurant.createdAt
+                        )
+
+                        if (updateResult.isSuccess) {
+                            _uiState.update {
+                                it.copy(
+                                    restaurant = updateResult.getOrThrow(),
+                                    hasRestaurant = true,
+                                    isEditing = false,
+                                    menuPdfUri = null,
+                                    menuPdfUrl = pdfUrl,
+                                    uploadProgress = null,
+                                    successMessage = "Restaurant saved and PDF uploaded successfully",
+                                    error = null
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            restaurant = savedRestaurant,
+                            hasRestaurant = true,
+                            isEditing = false,
+                            menuPdfUri = null,
+                            successMessage = "Restaurant saved successfully",
+                            error = null
+                        )
+                    }
                 }
             } else {
                 val exception = result.exceptionOrNull()
@@ -361,9 +477,6 @@ class OwnerProfileViewModel(
     // ERROR MAPPING
     // ========================================================================
 
-    /**
-     * Maps domain exceptions to user-friendly error messages.
-     */
     private fun mapErrorToMessage(exception: Throwable?): String {
         return when (exception) {
             is DomainException.NetworkError ->
