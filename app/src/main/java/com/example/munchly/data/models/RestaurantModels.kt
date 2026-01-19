@@ -21,7 +21,8 @@ data class Restaurant(
     val menuPdfUrl: String = "",
     val images: List<String> = emptyList(),
     val createdAt: Long = 0,
-    val updatedAt: Long = 0
+    val updatedAt: Long = 0,
+
 )
 
 /**

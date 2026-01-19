@@ -1,6 +1,9 @@
 package com.example.munchly.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.munchly.MunchlyApplication
+import com.example.munchly.R
 import com.example.munchly.ui.components.AppLogo
 import com.example.munchly.ui.components.AppTitle
 import com.example.munchly.ui.components.AuthButton
@@ -33,7 +37,9 @@ import com.example.munchly.ui.components.SignUpPrompt
 import com.example.munchly.ui.components.ValidationTextField
 import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.LoginViewModel
-
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 /**
  * Login screen for existing users.
  * Uses domain models (UserDomain) exclusively.
@@ -41,9 +47,38 @@ import com.example.munchly.ui.viewmodels.LoginViewModel
 @Composable
 fun LoginScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as MunchlyApplication
-    val viewModel = remember { LoginViewModel(app.loginUseCase) }
+    val context = LocalContext.current
+    val viewModel = remember { LoginViewModel(
+        app.loginUseCase,
+        googleLoginUseCase = app.googleLoginUseCase
+    ) }
     val state by viewModel.uiState.collectAsState()
 
+    // 1. Set up the launcher to receive the result from Google
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account?.idToken
+            if (idToken != null) {
+                viewModel.signInWithGoogle(idToken)
+            } else {
+                // Handle missing token
+            }
+        } catch (e: ApiException) {
+            // Handle error (e.g., user cancelled)
+        }
+    }
+    val startGoogleSignIn = {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        val client = GoogleSignIn.getClient(context, gso)
+        googleSignInLauncher.launch(client.signInIntent)
+    }
     // Navigate to main screen on successful login
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
@@ -126,20 +161,23 @@ fun LoginScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+                    // Inside your Column, below the "Sign In" AuthButton
+                    // Place this inside your Column, below the main AuthButton/CircularProgressIndicator
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    state.error?.let { error ->
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MunchlyColors.errorBackground
-                            )
+                    androidx.compose.material3.TextButton(
+                        onClick = startGoogleSignIn,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        androidx.compose.foundation.layout.Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
+                            // Optional: You can add an Icon here if you have a Google drawable
                             Text(
-                                text = error,
-                                color = MunchlyColors.error,
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(12.dp)
+                                text = "Continue with Google",
+                                color = MunchlyColors.primary, // Using your theme's brand color
+                                fontSize = 16.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                             )
                         }
                     }
@@ -154,3 +192,4 @@ fun LoginScreen(navController: NavController) {
         }
     }
 }
+

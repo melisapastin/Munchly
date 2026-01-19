@@ -69,6 +69,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
+    // Google Maps for Compose
+    implementation("com.google.maps.android:maps-compose:4.3.3")
+    // Google Play Services for Maps
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -83,4 +88,6 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+
+    implementation(libs.play.services.auth)
 }

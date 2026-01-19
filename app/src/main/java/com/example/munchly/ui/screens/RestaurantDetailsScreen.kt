@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,11 +27,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Button
@@ -46,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -58,12 +63,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.munchly.domain.models.RestaurantDomain
 import com.example.munchly.ui.components.ErrorState
 import com.example.munchly.ui.components.LoadingState
 import com.example.munchly.ui.components.OpeningHoursDisplay
 import com.example.munchly.ui.components.WriteReviewDialog
 import com.example.munchly.ui.theme.MunchlyColors
 import com.example.munchly.ui.viewmodels.RestaurantDetailsViewModel
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 /**
  * UPDATED: Added image carousel and menu PDF viewer
@@ -79,6 +93,13 @@ fun RestaurantDetailsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    LaunchedEffect(state.restaurant) {
+        state.restaurant?.let { restaurant ->
+            if (state.latitude == 0.0) { // Only search if we haven't found them yet
+                viewModel.fetchMapCoordinates(restaurant.address, context)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,7 +107,7 @@ fun RestaurantDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MunchlyColors.textPrimary
                         )
@@ -113,8 +134,26 @@ fun RestaurantDetailsScreen(
                                 MunchlyColors.textPrimary
                             }
                         )
+
+
+
+                    }
+                    IconButton(onClick = {
+                        // We use the Elvis operator to provide a fallback "" if the restaurant is null
+                        shareRestaurant(
+                            context = context,
+                            name = state.restaurant?.name ?: "Restaurant",
+                            address = state.restaurant?.address ?: "Unknown Address"
+                        )
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
+                            tint = MunchlyColors.primary
+                        )
                     }
                 },
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MunchlyColors.surface,
                     titleContentColor = MunchlyColors.textPrimary
@@ -344,6 +383,39 @@ fun RestaurantDetailsScreen(
                                 }
                             }
                         }
+                        item {
+                            InfoSection(title = "Location") {
+                                // 1. Check the coordinates in the UI state, NOT the restaurant object
+                                if (state.latitude != 0.0 && state.longitude != 0.0) {
+
+                                    // 2. Create a temporary copy that combines the restaurant info
+                                    // with the coordinates the ViewModel found
+                                    val restaurantWithCoordinates = state.restaurant!!.copy(
+                                        latitude = state.latitude,
+                                        longitude = state.longitude
+                                    )
+
+                                    // 3. Pass this "complete" object to your Map function
+                                    RestaurantLocationMap(restaurantWithCoordinates)
+
+                                } else {
+                                    // 4. While the coordinates are 0.0, show this
+                                    Column {
+                                        Text(
+                                            text = "Map location not available",
+                                            fontSize = 14.sp,
+                                            color = MunchlyColors.textSecondary
+                                        )
+                                        // Helpful for debugging:
+                                        Text(
+                                            text = "Debug Info: Lat=${state.latitude}, Lng=${state.longitude}",
+                                            fontSize = 10.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+                        }
 
                         // Opening Hours
                         item {
@@ -517,4 +589,89 @@ private fun InfoSection(
         Spacer(modifier = Modifier.height(12.dp))
         content()
     }
+}
+@Composable
+private fun RestaurantLocationMap(restaurant: RestaurantDomain) {
+    val context = LocalContext.current
+    val restaurantLocation = LatLng(restaurant.latitude, restaurant.longitude)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(restaurantLocation, 15f)
+    }
+
+    Box {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(vertical = 16.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                // Disable map gestures so the user doesn't accidentally scroll away
+                // while trying to scroll down the list
+                properties = MapProperties(isMyLocationEnabled = false),
+                uiSettings = MapUiSettings(zoomControlsEnabled = false, scrollGesturesEnabled = false)
+            ) {
+                Marker(state = MarkerState(position = restaurantLocation), title = restaurant.name)
+            }
+        }
+
+        // ADD THIS: A floating button on the map to "Get Directions"
+        Button(
+            onClick = {
+                openGoogleMaps(context, restaurant.latitude, restaurant.longitude, restaurant.name)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 32.dp, end = 24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MunchlyColors.primary),
+            shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+        ) {
+            Icon(Icons.Default.Directions, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(4.dp))
+            Text("Directions", fontSize = 12.sp)
+        }
+    }
+}
+
+fun openGoogleMaps(context: android.content.Context, lat: Double, lng: Double, label: String) {
+    // This creates a "Uri" that the Google Maps app understands
+    val uri = "geo:$lat,$lng?q=$lat,$lng($label)"
+    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(uri))
+
+    // Tell the intent to specifically look for the Maps app
+    intent.setPackage("com.google.android.apps.maps")
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        // If they don't have the Maps app, open in a browser instead
+        val browserUri = "https://www.google.com/maps/search/?api=1&query=$lat,$lng"
+        val browserIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(browserUri))
+        context.startActivity(browserIntent)
+    }
+}
+
+
+fun shareRestaurant(context: android.content.Context, name: String, address: String) {
+    val shareBody = """
+        🍴 Check out this place I found on Munchly!
+        
+        🏠 Restaurant: $name
+        📍 Location: $address
+        
+        Sent from Munchly App
+    """.trimIndent()
+
+    val sendIntent: Intent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, shareBody)
+        type = "text/plain"
+    }
+
+    val shareIntent = Intent.createChooser(sendIntent, "Share this restaurant via")
+    context.startActivity(shareIntent)
 }

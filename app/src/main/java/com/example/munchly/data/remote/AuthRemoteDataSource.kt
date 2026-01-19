@@ -5,7 +5,9 @@ import com.example.munchly.data.models.User
 import com.example.munchly.data.models.UserType
 import com.example.munchly.domain.exceptions.DataIntegrityException
 import com.example.munchly.domain.exceptions.DataUsernameConflictException
+import com.example.munchly.domain.exceptions.UserNotFoundException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.tasks.await
@@ -45,6 +47,10 @@ interface AuthRemoteDataSource {
      * @throws DataUsernameConflictException if username already exists
      * @throws Exception on registration or network errors
      */
+
+    suspend fun signInWithGoogle(idToken: String): User
+
+
     suspend fun register(
         email: String,
         password: String,
@@ -103,6 +109,30 @@ class AuthRemoteDataSourceImpl(
         return user
     }
 
+
+
+
+    override suspend fun signInWithGoogle(idToken: String): User {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val authResult = auth.signInWithCredential(credential).await()
+        val firebaseUser = authResult.user ?: throw UserNotFoundException()
+
+        // Check if user exists in Firestore, if not, create a default "FOOD_LOVER" profile
+        val userDoc = firestore.collection("users").document(firebaseUser.uid).get().await()
+        return if (userDoc.exists()) {
+            userDoc.toObject(User::class.java)!!
+        } else {
+            val newUser = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                username = firebaseUser.displayName ?: "User",
+                userType = UserType.FOOD_LOVER, // Default type for social login
+                createdAt = System.currentTimeMillis()
+            )
+            firestore.collection("users").document(newUser.uid).set(newUser).await()
+            newUser
+        }
+    }
     override suspend fun register(
         email: String,
         password: String,

@@ -17,6 +17,8 @@ data class RestaurantDomain(
     val tags: List<String>,
     val priceRange: PriceRangeDomain,
     val address: String,
+    val latitude: Double = 0.0,  // Add this
+    val longitude: Double = 0.0,
     val phone: String,
     val openingHours: Map<String, DayScheduleDomain>,
     val menuPdfUrl: String,

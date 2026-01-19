@@ -39,6 +39,16 @@ class AuthRepositoryImpl(
         remoteDataSource.login(email, password).toDomain()
     }
 
+    override suspend fun signInWithGoogle(idToken: String): Result<UserDomain> =
+        safeFirebaseCall("Google Sign-In") {
+            // 1. Call the data source
+            val userDto = remoteDataSource.signInWithGoogle(idToken)
+
+            // 2. Map the Data DTO to a Domain Model
+            userDto.toDomain()
+        }
+
+
     override suspend fun register(
         email: String,
         password: String,

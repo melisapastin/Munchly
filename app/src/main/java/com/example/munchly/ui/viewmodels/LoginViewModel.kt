@@ -6,6 +6,7 @@ import com.example.munchly.domain.exceptions.*
 import com.example.munchly.domain.models.LoginInput
 import com.example.munchly.domain.models.UserDomain
 import com.example.munchly.domain.services.InputNormalizer
+import com.example.munchly.domain.usecases.GoogleLoginUseCase
 import com.example.munchly.domain.usecases.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +48,8 @@ data class LoginState(
  * - Map domain exceptions to user-friendly messages
  */
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val googleLoginUseCase: GoogleLoginUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginState())
@@ -127,6 +129,52 @@ class LoginViewModel(
             } else {
                 val errorMessage = mapErrorToMessage(result.exceptionOrNull())
                 _uiState.update { it.copy(error = errorMessage) }
+            }
+        }
+    }
+    /**
+     * Processes Google Sign-In using the ID token provided by the UI.
+     * Follows the standard Munchly state-management pattern.
+     */
+    fun signInWithGoogle(idToken: String) {
+        // 1. Show loading state and clear old errors
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            try {
+                // 2. Call the Google login use case
+                // (Make sure to inject googleLoginUseCase into the constructor)
+                val result = googleLoginUseCase(idToken)
+
+                // 3. Hide loading state
+                _uiState.update { it.copy(isLoading = false) }
+
+                // 4. Handle results based on domain Result wrapper
+                if (result.isSuccess) {
+                    _uiState.update {
+                        it.copy(
+                            loginSuccess = true,
+                            user = result.getOrNull()
+                        )
+                    }
+                } else {
+                    // Map DomainException to user-friendly String
+                    val errorMessage = mapErrorToMessage(result.exceptionOrNull())
+                    _uiState.update { it.copy(error = errorMessage) }
+                }
+            } catch (e: Exception) {
+                // Safety fallback for unexpected VM-level exceptions
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "An unexpected error occurred during Google Sign-In"
+                    )
+                }
             }
         }
     }

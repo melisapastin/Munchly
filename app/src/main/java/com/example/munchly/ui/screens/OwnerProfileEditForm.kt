@@ -1,5 +1,11 @@
 package com.example.munchly.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,10 +31,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.munchly.ui.components.AuthFieldLabel
 import com.example.munchly.ui.components.MenuPdfUpload
 import com.example.munchly.ui.components.OpeningHoursSelector
@@ -52,6 +60,47 @@ fun OwnerProfileEditForm(
     onImageUploadClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    // 1. Define the permissions needed based on Android Version
+    val imagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+    } else {
+        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+
+    // 2. Setup the Permission Launchers
+    val imagePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions.values.all { it }
+        if (isGranted) {
+            onImageUploadClick()
+        } else {
+            Toast.makeText(context, "Permission denied for images", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val pdfPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions.values.all { it }
+        if (isGranted) {
+            onPdfUploadClick()
+        } else {
+            Toast.makeText(context, "Permission denied for files", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Helper to check if permissions are already granted
+    fun checkAndRequest(permissions: Array<String>, launcher: androidx.activity.result.ActivityResultLauncher<Array<String>>, onGranted: () -> Unit) {
+        val allGranted = permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+        if (allGranted) onGranted() else launcher.launch(permissions)
+    }
+
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -192,7 +241,10 @@ fun OwnerProfileEditForm(
             val hasMenuPdf = state.menuPdfUri != null || state.menuPdfUrl.isNotEmpty()
             MenuPdfUpload(
                 menuPdfUrl = if (hasMenuPdf) "uploaded" else null,
-                onUploadClick = onPdfUploadClick,
+                onUploadClick = {
+                    // Use the permission guard
+                    checkAndRequest(imagePermissions, pdfPermissionLauncher, onPdfUploadClick)
+                },
                 onRemoveClick = viewModel::removeMenuPdf
             )
         }
@@ -200,7 +252,10 @@ fun OwnerProfileEditForm(
         item {
             RestaurantImagesUpload(
                 images = state.images,
-                onAddImage = onImageUploadClick,
+                onAddImage = {
+                    // Use the permission guard
+                    checkAndRequest(imagePermissions, imagePermissionLauncher, onImageUploadClick)
+                },
                 onRemoveImage = viewModel::removeImage
             )
         }

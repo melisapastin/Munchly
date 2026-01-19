@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Munchly</string>
+    <string name="default_web_client_id">57558245105-p8o144l0t0iun7sb9hh872kl4rl97hrb.apps.googleusercontent.com</string>
+
 </resources>

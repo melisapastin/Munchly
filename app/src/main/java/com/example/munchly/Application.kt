@@ -49,6 +49,9 @@ class MunchlyApplication : Application() {
     private val firebaseAuth by lazy {
         FirebaseAuth.getInstance()
     }
+    val googleLoginUseCase by lazy {
+        GoogleLoginUseCase(authRepository)
+    }
 
     private val firestore by lazy {
         FirebaseFirestore.getInstance()

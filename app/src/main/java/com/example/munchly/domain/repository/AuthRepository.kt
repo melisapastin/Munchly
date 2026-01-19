@@ -27,6 +27,13 @@ interface AuthRepository {
      * Creates a new user account.
      * @return Created user domain model if successful
      */
+
+
+
+    suspend fun signInWithGoogle(idToken: String): Result<UserDomain>
+
+
+
     suspend fun register(
         email: String,
         password: String,

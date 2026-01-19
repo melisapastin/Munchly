@@ -3,9 +3,12 @@ package com.example.munchly.ui.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.munchly.data.repository.LocationHelper
+
 import com.example.munchly.domain.exceptions.DomainException
 import com.example.munchly.domain.models.RestaurantDomain
 import com.example.munchly.domain.models.ReviewInput
+import com.example.munchly.domain.repository.LocationService
 import com.example.munchly.domain.usecases.CreateReviewUseCase
 import com.example.munchly.domain.usecases.GetRestaurantDetailsUseCase
 import com.example.munchly.domain.usecases.GetRestaurantReviewsUseCase
@@ -33,7 +36,9 @@ data class RestaurantDetailsState(
     val isBookmarked: Boolean = false,
     val hasUserReviewed: Boolean = false,
     val showWriteReviewDialog: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
 )
 
 // ============================================================================
@@ -197,6 +202,26 @@ class RestaurantDetailsViewModel(
         _uiState.update { it.copy(showWriteReviewDialog = false) }
     }
 
+
+    fun fetchMapCoordinates(address: String, context: android.content.Context) {
+        viewModelScope.launch {
+            val helper = LocationHelper(context)
+
+            // 1. We ask the helper to find the real numbers for the address
+            val coords = helper.getCoordinates(address)
+
+            if (coords != null) {
+                // 2. Success! Update the state with the real coordinates
+                _uiState.update { it.copy(
+                    latitude = coords.first,
+                    longitude = coords.second
+                )}
+            } else {
+                // Optional: If Geocoder fails, you could log it
+                Log.e("Munchly", "Could not find coordinates for: $address")
+            }
+        }
+    }
     /**
      * COMPLETELY REWRITTEN: Tracks stats according to new requirements
      *

@@ -12,7 +12,20 @@
           "package_name": "com.example.munchly"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "57558245105-tcrm9vv7jnvlp9fl30b9e86rn621rrl6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.munchly",
+            "certificate_hash": "ba13da2c88fbe047e2b69427de6fe5669dd43b0a"
+          }
+        },
+        {
+          "client_id": "57558245105-p8o144l0t0iun7sb9hh872kl4rl97hrb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC3mZo1IAdjbYtvpaE848Q8QNmX4dFyszw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "57558245105-p8o144l0t0iun7sb9hh872kl4rl97hrb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
